@@ -4,6 +4,7 @@ import { uid, guessFilter } from './util.js'
 import { writeDoc } from './store.js'
 import { applySeed } from './seed.js'
 import Users from './Users.jsx'
+import ListesIO from './ListesIO.jsx'
 import Personnel from './Personnel.jsx'
 import Activity from './Activity.jsx'
 import { canTab, isSuper } from './roles.js'
@@ -260,7 +261,7 @@ function Engins({ c, set }) {
   )
 }
 
-function Donnees({ c, setAll, role }) {
+function Donnees({ c, setAll, role, config, selfId }) {
   const [msg, setMsg] = useState('')
   const seed = async () => { setMsg('Import en cours…'); try { await applySeed(writeDoc); setMsg('Données du classeur importées (plannings, parc, calendrier, cadres).') } catch { setMsg("Échec de l'import.") } }
   const exp = () => {
@@ -273,6 +274,8 @@ function Donnees({ c, setAll, role }) {
   }
   return (
     <div className="stack">
+      <ListesIO config={config} role={role} selfId={selfId} />
+      <h3>Configuration et classeur</h3>
       <button onClick={exp}>⭳ Exporter la configuration (JSON)</button>
       <label className="filebtn">⭱ Importer une configuration<input type="file" accept="application/json" onChange={imp} hidden /></label>
       <button onClick={seed} disabled={!isSuper(role)}>Importer les données du classeur Excel</button>
@@ -315,7 +318,7 @@ export default function Settings({ config, onSave, onBack, onLogout, role, selfI
         {tab === 'staff' && <Personnel c={c} set={set} config={config} role={role} selfId={selfId} dirty={!saved} />}
         {tab === 'log' && <Activity config={config} />}
         {tab === 'users' && <Users role={role} selfId={selfId} config={config} />}
-        {tab === 'data' && <Donnees c={c} setAll={setAll} role={role} />}
+        {tab === 'data' && <Donnees c={c} setAll={setAll} role={role} config={config} selfId={selfId} />}
       </main>
     </div>
   )

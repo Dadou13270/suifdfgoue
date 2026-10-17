@@ -1,5 +1,5 @@
-import React, { useState } from 'react'
-import { useDoc } from './store.js'
+import React, { useEffect, useState } from 'react'
+import { useDoc, subscribe } from './store.js'
 import { TextField } from './Cell.jsx'
 import { uid } from './util.js'
 import { DEFAULT_CONFIG } from './defaults.js'
@@ -15,15 +15,26 @@ export default function Cadres({ config }) {
   const fdfs = config?.lists?.fdf || ['FDF3', 'FDF4', 'FDF5']
   const N = (s) => String(s || '').trim().toUpperCase()
   const fdfOf = (c) => (pers?.list || []).find((p) => N(p.nom) === N(c.nom))?.fdf || ''
-  const missing = (pers?.list || []).filter((p) => ['FDF4', 'FDF5'].includes(p.fdf) && !(doc?.list || []).some((c) => N(c.nom) === N(p.nom)))
+  // noms saisis dans les plannings
+  const [plans, setPlans] = useState({})
+  const pids = (config?.plannings || []).map((p) => p.id).join(',')
+  useEffect(() => {
+    const offs = pids.split(',').filter(Boolean).map((id) => subscribe(`planning/${id}`, (v) => setPlans((x) => ({ ...x, [id]: v?.days || {} }))))
+    return () => offs.forEach((o) => o())
+  }, [pids])
+  const inPlans = new Map()
+  ;(config?.plannings || []).forEach((pl) => Object.values(plans[pl.id] || {}).forEach((row) => pl.cols.forEach((c) => { const n = N(row?.[c.id]); if (n && !inPlans.has(n)) inPlans.set(n, { nom: n, fdf: c.fdf || '' }) })))
+  const have = new Set((doc?.list || []).map((c) => N(c.nom)))
+  const byNom = new Map()
+  ;(pers?.list || []).filter((p) => p.nom && !have.has(N(p.nom))).forEach((p) => byNom.set(N(p.nom), p))
+  inPlans.forEach((v, n) => { if (!have.has(n) && !byNom.has(n)) byNom.set(n, { nom: n, prenom: '', grade: '' }) })
+  const missing = [...byNom.values()]
   const [q, setQ] = useState('')
   const [g, setG] = useState('')
   const list = doc?.list || []
-  const bes = doc?.besoins || []
   const set = (id, p) => patch({ list: list.map((c) => (c.id === id ? { ...c, ...p } : c)) })
   const shown = list.filter((c) => (!g || c.giff === g) && (!fd || fdfOf(c) === fd) && (!ml || (ml === 'oui' ? !!c.mil : !c.mil)) && (!q || `${c.nom} ${c.prenom}`.toLowerCase().includes(q.toLowerCase())))
-  const totB = bes.reduce((a, b) => a + (Number(b.afournir) || 0), 0)
-  const setB = (i, p) => patch({ besoins: bes.map((b, k) => (k === i ? { ...b, ...p } : b)) })
+    .sort((a, b) => String(a.nom || '').localeCompare(String(b.nom || ''), 'fr') || String(a.prenom || '').localeCompare(String(b.prenom || ''), 'fr'))
 
   return (
     <div>
@@ -33,7 +44,7 @@ export default function Cadres({ config }) {
           <input className="short" placeholder="Rechercher…" value={q} onChange={(e) => setQ(e.target.value)} />
           <select className="short" value={ml} onChange={(e) => setMl(e.target.value)}><option value="">MIL : tous</option><option value="oui">MIL cochés</option><option value="non">Hors MIL</option></select>
           <select className="short" value={fd} onChange={(e) => setFd(e.target.value)}><option value="">Tous FDF</option>{fdfs.map((x) => <option key={x}>{x}</option>)}</select>
-          <button onClick={() => patch({ list: [...missing.map((p) => ({ id: uid(), grade: p.grade || '', nom: N(p.nom), prenom: p.prenom || '', dispos: 0, giff: '', mil: false, fonct: '', cdg: '', aff: '', just: '' })), ...list] })} disabled={!missing.length} title="Ajoute à la liste les FDF4 et FDF5 de Gestion du personnel">+ FDF4/5 du personnel{missing.length ? ` (${missing.length})` : ''}</button>
+          <button onClick={() => patch({ list: [...missing.map((p) => ({ id: uid(), grade: p.grade || '', nom: N(p.nom), prenom: p.prenom || '', dispos: 0, giff: '', mil: false, fonct: '', cdg: '', aff: '', just: '' })), ...list] })} disabled={!missing.length} title="Ajoute à la liste les noms présents dans Gestion du personnel ou saisis dans les plannings et absents des cadres">+ Noms manquants{missing.length ? ` (${missing.length})` : ''}</button>
           <select className="short" value={g} onChange={(e) => setG(e.target.value)}><option value="">Tous GIFF</option><option>CENTRE</option><option>OUEST</option><option>EST</option></select>
           <button className="primary" onClick={() => patch({ list: [{ id: uid(), grade: '', nom: 'NOUVEAU', prenom: '', dispos: 0, giff: '', mil: false, fonct: '', cdg: '', aff: '', just: '' }, ...list] })}>+ Cadre</button>
         </div>
@@ -71,21 +82,6 @@ export default function Cadres({ config }) {
           </tbody>
         </table>
       </div>
-      <section className="card besoins">
-        <h3>Sollicitations CIS (FDF3 à fournir en COD)</h3>
-        <table className="week">
-          <thead><tr><th>CIS</th><th>À fournir</th><th>Total dispo FDF3</th></tr></thead>
-          <tbody>
-            {bes.map((b, i) => (
-              <tr key={i}><td><TextField value={b.cis} onCommit={(v) => setB(i, { cis: v })} /></td>
-                <td><TextField value={String(b.afournir ?? '')} onCommit={(v) => setB(i, { afournir: Number(v) || 0 })} /></td>
-                <td><TextField value={String(b.dispo ?? '')} onCommit={(v) => setB(i, { dispo: Number(v) || 0 })} /></td></tr>
-            ))}
-            <tr className="brow"><th>Total</th><th>{totB}</th><th>{bes.reduce((a, b) => a + (Number(b.dispo) || 0), 0)}</th></tr>
-          </tbody>
-        </table>
-        <button onClick={() => patch({ besoins: [...bes, { cis: '', afournir: 0, dispo: 0 }] })}>+ CIS</button>
-      </section>
     </div>
   )
 }
