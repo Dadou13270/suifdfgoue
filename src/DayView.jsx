@@ -78,11 +78,14 @@ export default function DayView({ config, day, onPatch }) {
           <h3 className="sectitle">Dispositif</h3>
         </>
       )}
-      <div className="grid">
-        {config.blocks.filter((b) => b.section !== 'cdt').map((b) => isAddable(b) ? <ConfigBlock key={b.id} b={b} config={config} day={day} onPatch={onPatch} /> : <Block key={b.id} b={b} config={config} day={day} onPatch={onPatch} />)}
-        {(day.customBlocks || []).map((b) => <CustomBlock key={b.id} b={b} config={config} day={day} onPatch={onPatch} />)}
-      </div>
-      <div className="line"><AddBlockButton day={day} onPatch={onPatch} /><span className="muted small">Bloc propre à ce jour. Pour un bloc permanent : Paramètres › Blocs.</span></div>
+      {(() => {
+        const grp = (b) => (/^giff/.test(b.id) ? 0 : /^(mil|sigar)/.test(b.id) ? 1 : ['mip', 'dih', 'spec'].includes(b.id) ? 2 : 3)
+        const rows = [[], [], [], []]
+        config.blocks.filter((b) => b.section !== 'cdt').forEach((b) => rows[grp(b)].push(isAddable(b) ? <ConfigBlock key={b.id} b={b} config={config} day={day} onPatch={onPatch} /> : <Block key={b.id} b={b} config={config} day={day} onPatch={onPatch} />))
+        ;(day.customBlocks || []).forEach((b) => rows[3].push(<CustomBlock key={b.id} b={b} config={config} day={day} onPatch={onPatch} />))
+        rows[3].push(<div className="line addline" key="__add"><AddBlockButton day={day} onPatch={onPatch} /><span className="muted small">Bloc propre à ce jour. Pour un bloc permanent : Paramètres › Blocs.</span></div>)
+        return rows.filter((r) => r.length).map((r, i) => <div className="grid rowgrid" style={{ '--n': r.length }} key={i}>{r}</div>)
+      })()}
       <section className="card">
         <label className="lbl">Commentaire du jour</label>
         <textarea className="comment" defaultValue={day.comment || ''} key={day.comment}
