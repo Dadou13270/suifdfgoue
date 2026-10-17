@@ -28,40 +28,9 @@ export default function WeekView({ config, dates, days, onPatch, onOpen }) {
     const blob = new Blob(['﻿' + rows.map((r) => r.map(q).join(';')).join('\n')], { type: 'text/csv' })
     const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `dispositif_${dates[0]}.csv`; a.click()
   }
-  return (
-    <>
-      <div className="weekstrip">
-        <div className="weektitle"><b>Semaine {weekNum(dates[0])}</b> <span className="muted">du {dates[0].slice(8).replace(/^0/, '')} au {fmtDMY(dates[6])}</span></div>
-        <div className="days7">
-          {dates.map((d) => (
-            <button key={d} className={`dchip ${d === today ? 'today' : ''}`} onClick={() => onOpen(d)} title="Ouvrir ce jour">
-              <span>{fmtDow(d)}</span><b>{d.slice(8)}</b><span className="muted">{d.slice(5, 7)}</span>
-            </button>
-          ))}
-        </div>
-      </div>
-      <div className="weekbar"><Legend legend={config.legend} /><button onClick={exportCsv}>⭳ CSV</button></div>
-      <div className="tablewrap">
-        <table className="week">
-          <thead>
-            <tr><th className="sticky" style={{ top: 0 }}>Semaine {weekNum(dates[0])}</th>{dates.map((d) => <th key={d} className={d === today ? 'todaycol' : ''} style={{ top: 0 }}><button className="link" onClick={() => onOpen(d)}>{fmtShort(d)}</button></th>)}</tr>
-            {config.header.map((h, i) => (
-              <tr key={h.id} className="hrow infor">
-                <th className="sticky" style={{ top: 40 + i * 42 }}>{h.label}</th>
-                {dates.map((d) => (
-                  <th key={d} style={{ top: 40 + i * 42 }}>
-                    <select value={days[d]?.header?.[h.id] ?? ''} onChange={(e) => onPatch(d, { header: { [h.id]: e.target.value } })}>
-                      <option value="">—</option>{(config.lists[h.list] || []).map((o) => <option key={o}>{o}</option>)}
-                    </select>
-                  </th>
-                ))}
-              </tr>
-            ))}
-          </thead>
-          <tbody>
-            {ordered.map((b, bi) => (
+  const blockRows = (list) => list.map((b, bi) => (
               <React.Fragment key={b.id}>
-                {(bi === 0 || (ordered[bi - 1].section === 'cdt') !== (b.section === 'cdt')) && (
+                {bi === 0 && (
                   <tr className="secrow"><th colSpan={dates.length + 1}>{b.section === 'cdt' ? (config.cdtTitle || 'Chaîne de commandement') : 'Dispositif'}</th></tr>
                 )}
                 {isAddable(b) ? (
@@ -96,7 +65,57 @@ export default function WeekView({ config, dates, days, onPatch, onOpen }) {
                 )}
                 </>}
               </React.Fragment>
+            ))
+  const dateRow = (top) => <tr><th className="sticky" style={{ top }}>Semaine {weekNum(dates[0])}</th>{dates.map((d) => <th key={d} className={d === today ? 'todaycol' : ''} style={{ top }}><button className="link" onClick={() => onOpen(d)}>{fmtShort(d)}</button></th>)}</tr>
+  const cdtList = ordered.filter((b) => b.section === 'cdt')
+  const mainList = ordered.filter((b) => b.section !== 'cdt')
+  return (
+    <>
+      <div className="weekstrip">
+        <div className="weektitle"><b>Semaine {weekNum(dates[0])}</b> <span className="muted">du {dates[0].slice(8).replace(/^0/, '')} au {fmtDMY(dates[6])}</span></div>
+        <div className="days7">
+          {dates.map((d) => (
+            <button key={d} className={`dchip ${d === today ? 'today' : ''}`} onClick={() => onOpen(d)} title="Ouvrir ce jour">
+              <span>{fmtDow(d)}</span><b>{d.slice(8)}</b><span className="muted">{d.slice(5, 7)}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+      <div className="weekbar"><Legend legend={config.legend} /><button onClick={exportCsv}>⭳ CSV</button></div>
+      <div className="tablewrap">
+        <table className="week">
+          <colgroup><col style={{ width: 150 }} />{dates.map((d) => <col key={d} />)}</colgroup>
+          <thead>
+            <tr><th className="sticky" style={{ top: 0 }}>Semaine {weekNum(dates[0])}</th>{dates.map((d) => <th key={d} className={d === today ? 'todaycol' : ''} style={{ top: 0 }}><button className="link" onClick={() => onOpen(d)}>{fmtShort(d)}</button></th>)}</tr>
+            {config.header.map((h, i) => (
+              <tr key={h.id} className="hrow infor">
+                <th className="sticky" style={{ top: 40 + i * 42 }}>{h.label}</th>
+                {dates.map((d) => (
+                  <th key={d} style={{ top: 40 + i * 42 }}>
+                    <select value={days[d]?.header?.[h.id] ?? ''} onChange={(e) => onPatch(d, { header: { [h.id]: e.target.value } })}>
+                      <option value="">—</option>{(config.lists[h.list] || []).map((o) => <option key={o}>{o}</option>)}
+                    </select>
+                  </th>
+                ))}
+              </tr>
             ))}
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      {cdtList.length > 0 && <div className="tablewrap blocksep">
+        <table className="week">
+          <colgroup><col style={{ width: 150 }} />{dates.map((d) => <col key={d} />)}</colgroup>
+          <thead>{dateRow(0)}</thead>
+          <tbody>{blockRows(cdtList)}</tbody>
+        </table>
+      </div>}
+      <div className="tablewrap blocksep">
+        <table className="week">
+          <colgroup><col style={{ width: 150 }} />{dates.map((d) => <col key={d} />)}</colgroup>
+          <thead>{dateRow(0)}</thead>
+          <tbody>
+            {blockRows(mainList)}
             <tr className="secrow"><th colSpan={dates.length + 1}>Blocs ajoutés</th></tr>
             <tr>
               <th className="sticky sub">Autres blocs du jour</th>

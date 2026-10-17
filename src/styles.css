@@ -214,3 +214,7 @@ h3{margin:18px 0 6px}
 .presence .dot{width:8px;height:8px;border-radius:50%;background:#16a34a}
 .presence .me{font-weight:700}
 @media(max-width:700px){.presence{display:none}}
+
+.blocksep{margin-top:14px}
+table.week{table-layout:fixed;min-width:1500px}
+@media(max-width:700px){table.week{min-width:1400px}}

@@ -40,6 +40,8 @@ export default function Personnel({ c, set, config, role, selfId, dirty }) {
   const P = usePersonnel(config, role, selfId, true)
   const [cadres] = useDoc('cadres/main')
   const [q, setQ] = useState('')
+  const [lt, setLt] = useState('')
+  const initial = (c) => (String(c.nom || '').trim().normalize('NFD').replace(/[\u0300-\u036f]/g, '').charAt(0).toUpperCase() || '#').replace(/[^A-Z]/, '#')
   // Noms présents dans les plannings (avec FDF / cadre d'emploi de leur colonne)
   const [plans, setPlans] = useState({})
   const pkey = (config.plannings || []).map((p) => p.id).join(',')
@@ -84,7 +86,7 @@ export default function Personnel({ c, set, config, role, selfId, dirty }) {
       .map((x) => ({ id: uid(), nom: x.nom, prenom: x.prenom, grade: x.grade || '', cadreEmploi: '', fdf: '', role: '', email: '' }))
     if (add.length) P.save([...P.list, ...add])
   }
-  const shown = P.list.filter((p) => !q || `${p.nom} ${p.prenom}`.toLowerCase().includes(q.toLowerCase()))
+  const shown = P.list.filter((p) => (!lt || initial(p) === lt) && (!q || `${p.nom} ${p.prenom}`.toLowerCase().includes(q.toLowerCase())))
     .sort((a, b) => String(a.nom || '').localeCompare(String(b.nom || ''), 'fr') || String(a.prenom || '').localeCompare(String(b.prenom || ''), 'fr'))
   const pending = P.list.filter(P.needsSync).length
   const tokens = (s) => String(s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase().split(/[^A-Z]+/).filter(Boolean).sort().join(' ')
@@ -119,6 +121,13 @@ export default function Personnel({ c, set, config, role, selfId, dirty }) {
           <button onClick={P.syncAll} disabled={!pending || dirty} title={dirty ? 'Enregistrez d’abord les paramètres' : ''}>Appliquer les droits{pending ? ` (${pending})` : ''}</button>
           <button className="primary" onClick={() => P.save([{ id: uid(), nom: 'NOUVEAU', prenom: '', grade: '', cadreEmploi: '', fdf: '', role: '', email: '' }, ...P.list])}>+ Personne</button>
         </div>
+      </div>
+      <div className="alpha" role="group" aria-label="Filtrer par lettre">
+        <button className={!lt ? 'on' : ''} onClick={() => setLt('')}>Tous</button>
+        {[...'ABCDEFGHIJKLMNOPQRSTUVWXYZ'].map((L) => {
+          const n = P.list.filter((p) => initial(p) === L).length
+          return <button key={L} className={lt === L ? 'on' : ''} disabled={!n && lt !== L} onClick={() => setLt(lt === L ? '' : L)} title={`${n} nom(s)`}>{L}</button>
+        })}
       </div>
       {P.loaded && !P.list.length && <p className="muted">Aucun personnel. Ajoutez des personnes ou importez la liste des cadres.</p>}
       <div className="tablewrap">
