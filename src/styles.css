@@ -16,7 +16,7 @@ button.link{border:0;background:none;font-weight:600;text-transform:capitalize}
 input,select,textarea{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:calc(var(--pad) - 2px) var(--pad);min-height:38px;width:100%;min-width:0}
 input:focus,select:focus,textarea:focus{outline:2px solid var(--accent);outline-offset:-1px}
 .boot{display:grid;place-items:center;height:100vh;color:var(--muted)}
-.app{max-width:1500px;margin:0 auto;padding-block:0 40px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.app{max-width:none;margin:0 auto;padding-block:0 40px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
 .top{position:sticky;top:env(safe-area-inset-top,0px);z-index:10;background:var(--bg);display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--line)}
 .brand{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 .muted{color:var(--muted)}
@@ -216,8 +216,12 @@ h3{margin:18px 0 6px}
 @media(max-width:700px){.presence{display:none}}
 
 .blocksep{margin-top:14px}
-table.week.wv{table-layout:fixed;min-width:1500px}
-@media(max-width:700px){table.week.wv{min-width:1400px}}
+table.week.wv{table-layout:fixed;min-width:0;width:100%}
+table.week.wv th,table.week.wv td{min-width:0}
+table.week.wv .sticky{min-width:0}
+table.week.wv td .locf{min-width:0}
+table.week.wv td{overflow:hidden}
+@media(max-width:900px){table.week.wv{min-width:900px}}
 
 .notif{display:flex;align-items:center;gap:8px;margin-top:6px}
 .notif.done .ok{color:#15803d;font-weight:600;font-size:.9em}
