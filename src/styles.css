@@ -94,7 +94,7 @@ h3{margin:18px 0 6px}
 .small{font-size:.8em}
 .planlayout{display:grid;grid-template-columns:1fr 240px;gap:12px;align-items:start}
 .plantable td,.plantable th{min-width:110px}
-.plantable .sticky{min-width:90px;white-space:nowrap}
+.plantable .sticky{min-width:90px;width:1%;white-space:nowrap}
 .week tr.we>*{background:color-mix(in srgb,var(--muted) 10%,var(--card))}
 .week tr.today>*{background:color-mix(in srgb,var(--accent) 14%,var(--card))}
 .week tr.dup>*{background:color-mix(in srgb,#dc2626 20%,var(--card))}
@@ -216,8 +216,8 @@ h3{margin:18px 0 6px}
 @media(max-width:700px){.presence{display:none}}
 
 .blocksep{margin-top:14px}
-table.week{table-layout:fixed;min-width:1500px}
-@media(max-width:700px){table.week{min-width:1400px}}
+table.week.wv{table-layout:fixed;min-width:1500px}
+@media(max-width:700px){table.week.wv{min-width:1400px}}
 
 .notif{display:flex;align-items:center;gap:8px;margin-top:6px}
 .notif.done .ok{color:#15803d;font-weight:600;font-size:.9em}

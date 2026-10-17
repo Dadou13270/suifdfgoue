@@ -44,7 +44,7 @@ export default function App() {
   const [viewAs, setViewAs] = useState('')
   const role = realRole === 'superadmin' && viewAs ? viewAs : realRole
   const ready = !!user && role !== undefined && role !== 'pending' && role !== 'refused'
-  setActor({ email: user?.email || '', role: realRole || '' })
+  setActor({ email: user?.email || '', role: realRole || '', name: user?.displayName || '' })
   const [rightsDoc] = useDoc('config/rights', !!user && role !== undefined)
   setRights(rightsDoc?.roles)
   const [config, saveConfig] = useConfig(ready)

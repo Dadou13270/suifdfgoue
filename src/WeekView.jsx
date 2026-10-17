@@ -83,7 +83,7 @@ export default function WeekView({ config, dates, days, onPatch, onOpen }) {
       </div>
       <div className="weekbar"><Legend legend={config.legend} /><button onClick={exportCsv}>⭳ CSV</button></div>
       <div className="tablewrap">
-        <table className="week">
+        <table className="week wv">
           <colgroup><col style={{ width: 150 }} />{dates.map((d) => <col key={d} />)}</colgroup>
           <thead>
             <tr><th className="sticky" style={{ top: 0 }}>Semaine {weekNum(dates[0])}</th>{dates.map((d) => <th key={d} className={d === today ? 'todaycol' : ''} style={{ top: 0 }}><button className="link" onClick={() => onOpen(d)}>{fmtShort(d)}</button></th>)}</tr>
@@ -104,14 +104,14 @@ export default function WeekView({ config, dates, days, onPatch, onOpen }) {
         </table>
       </div>
       {cdtList.length > 0 && <div className="tablewrap blocksep">
-        <table className="week">
+        <table className="week wv">
           <colgroup><col style={{ width: 150 }} />{dates.map((d) => <col key={d} />)}</colgroup>
           <thead>{dateRow(0)}</thead>
           <tbody>{blockRows(cdtList)}</tbody>
         </table>
       </div>}
       <div className="tablewrap blocksep">
-        <table className="week">
+        <table className="week wv">
           <colgroup><col style={{ width: 150 }} />{dates.map((d) => <col key={d} />)}</colgroup>
           <thead>{dateRow(0)}</thead>
           <tbody>

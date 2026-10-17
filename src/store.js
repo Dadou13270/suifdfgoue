@@ -50,7 +50,7 @@ async function write(path, data, merge) {
 }
 
 /* ---------- journal d'activité : activity/{YYYY-MM-DD} = { items: [...] } ---------- */
-let actor = { email: '', role: '' }
+let actor = { email: '', role: '', name: '' }
 export const setActor = (a) => { actor = a }
 export const getActor = () => actor
 const NOLOG = /^(activity|meta|usersdemo)\b/
