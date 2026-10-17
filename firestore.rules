@@ -63,6 +63,7 @@ service cloud.firestore {
     match /fleet/{d}    { allow read: if active(); allow write: if allowed('engins'); }
     match /planning/{d} { allow read: if active(); allow write: if allowed('plannings'); }
     match /personnel/{d} { allow read: if active(); allow write: if isRole(['superadmin','admin']); }
+    match /presence/{d} { allow read, write: if active(); }
     match /activity/{d} { allow read: if isRole(['superadmin','admin']); allow create, update: if has(); }
     match /cadres/{d}   { allow read: if active(); allow write: if allowed('cadres'); }
   }

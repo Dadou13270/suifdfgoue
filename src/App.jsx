@@ -148,7 +148,7 @@ export default function App() {
       {MODE === 'local' && <div className="banner">{import.meta.env.VITE_TRIAL ? 'Version d\'essai : plannings d\'exemple décalés sur la période actuelle, données enregistrées dans ce navigateur uniquement.' : 'Mode local (aucune config Firebase) : données enregistrées sur cet appareil uniquement.'}</div>}
       {pdfMsg && <div className="banner" onClick={() => setPdfMsg('')}>{pdfMsg} <span className="muted small">(toucher pour fermer)</span></div>}
       {!verified && <div className="banner">Adresse e-mail non confirmée. <button className="link" onClick={resendVerify}>Renvoyer l'e-mail</button> · <button className="link" onClick={refreshVerify}>J'ai confirmé</button></div>}
-      <Nav tab={tab} setTab={setTab} allowed={allowed} />
+      <Nav tab={tab} setTab={setTab} allowed={allowed} user={user} role={role} />
       <Datalists config={config} fleet={fleetDoc?.engins || []} cadres={cadresDoc?.list || []} />
       {tab === 'dispositif' && (
         <div className="autobar">
@@ -162,7 +162,7 @@ export default function App() {
       )}
       <Lookup.Provider value={{ fix, fleet: fleetDoc?.engins || [], statuses: config.statuses }}>
       <main ref={mainRef}>
-        {!canTab(role, tab) ? null : tab === 'plannings' ? <Plannings config={config} date={date} />
+        {!canTab(role, tab) ? null : tab === 'plannings' ? <Plannings config={config} date={date} role={role} />
         : tab === 'engins' ? <Engins config={config} />
         : tab === 'calendrier' ? <Calendrier config={config} date={date} onApply={(d) => patch(date, d)} />
         : tab === 'carto' ? <Carto config={config} date={date} day={days[date] || {}} />

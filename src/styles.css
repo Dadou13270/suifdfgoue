@@ -209,3 +209,8 @@ h3{margin:18px 0 6px}
 .combo{z-index:9999;margin:0;padding:4px 0;list-style:none;background:var(--card);color:var(--fg);border:1px solid var(--line);border-radius:10px;box-shadow:0 8px 24px #0004;max-height:220px;overflow:auto;font-size:.95em}.combo li{padding:7px 12px;cursor:pointer;white-space:nowrap}.combo li:hover,.combo li.on{background:color-mix(in srgb,var(--accent) 14%,var(--card))}
 .milchk{width:20px;height:20px}
 .alpha{display:flex;flex-wrap:wrap;gap:4px;margin:8px 0}.alpha button{min-width:32px;height:32px;padding:0 8px;border-radius:8px;font-weight:600}.alpha button.on{background:var(--accent);color:#fff;border-color:var(--accent)}.alpha button:disabled{opacity:.35}
+
+.presence{margin-left:auto;display:flex;gap:6px;align-items:center;white-space:nowrap;padding-left:12px}
+.presence .dot{width:8px;height:8px;border-radius:50%;background:#16a34a}
+.presence .me{font-weight:700}
+@media(max-width:700px){.presence{display:none}}

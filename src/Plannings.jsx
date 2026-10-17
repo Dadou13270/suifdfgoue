@@ -6,12 +6,20 @@ import { addDays, iso } from './util.js'
 const MONTHS = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre']
 const DOW = ['dim', 'lun', 'mar', 'mer', 'jeu', 'ven', 'sam']
 
-export default function Plannings({ config, date }) {
+export default function Plannings({ config, date, role }) {
   const pls = config.plannings
   const [pid, setPid] = useState(pls[0]?.id)
   const pl = pls.find((p) => p.id === pid) || pls[0]
   const [ym, setYm] = useState(date.slice(0, 7))
-  const [doc, patch] = useDoc(`planning/${pl?.id}`)
+  const [doc, patch, replace] = useDoc(`planning/${pl?.id}`)
+  const [razAsk, setRazAsk] = useState(false)
+  useEffect(() => setRazAsk(false), [pid, ym])
+  const canRaz = role === 'superadmin' || role === 'admin'
+  const raz = () => {
+    const keep = Object.fromEntries(Object.entries(doc?.days || {}).filter(([d]) => !d.startsWith(ym)))
+    replace({ ...(doc || {}), days: keep })
+    setRazAsk(false)
+  }
   const [cadres] = useDoc('cadres/main')
   const [pers] = useDoc('personnel/main')
   const days = doc?.days || {}
@@ -64,6 +72,9 @@ export default function Plannings({ config, date }) {
           <button onClick={() => shift(-1)} aria-label="Mois précédent">‹</button>
           <b className="monthname">{MONTHS[m - 1]} {y}</b>
           <button onClick={() => shift(1)} aria-label="Mois suivant">›</button>
+          {canRaz && (razAsk
+            ? <><span className="small">Effacer {pl.title} {MONTHS[m - 1]} {y} ?</span><button className="danger" onClick={raz}>Confirmer</button><button onClick={() => setRazAsk(false)}>Annuler</button></>
+            : <button className="danger" onClick={() => setRazAsk(true)} title="Efface les données du planning affiché pour ce mois">RAZ</button>)}
         </div>
       </div>
       <datalist id="names-list">{names.map((x) => <option key={x} value={x} />)}</datalist>
