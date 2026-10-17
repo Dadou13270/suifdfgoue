@@ -1,6 +1,6 @@
 import React, { useContext, useState } from 'react'
 import { EngineCell, TextField, Lookup, LocField, DutyField, NotifyField } from './Cell.jsx'
-import { cellKey, listIdFor, guessFilter, blockName } from './util.js'
+import { cellKey, listIdFor, guessFilter, blockName, hdrClass } from './util.js'
 import { isAddable } from './ExtraRows.jsx'
 import HeadLine from './HeadLine.jsx'
 import CustomBlock, { ConfigBlock, AddBlockButton } from './CustomBlock.jsx'
@@ -63,7 +63,7 @@ export default function DayView({ config, day, onPatch }) {
         {config.header.map((h) => (
           <div className="hf" key={h.id}>
             <label>{h.label}</label>
-            <select value={day.header?.[h.id] ?? ''} onChange={(e) => onPatch({ header: { [h.id]: e.target.value } })}>
+            <select className={hdrClass(h.id, day.header?.[h.id])} value={day.header?.[h.id] ?? ''} onChange={(e) => onPatch({ header: { [h.id]: e.target.value } })}>
               <option value="">—</option>
               {(config.lists[h.list] || []).map((o) => <option key={o}>{o}</option>)}
             </select>

@@ -4,7 +4,7 @@ import { Legend } from './DayView.jsx'
 import { isAddable } from './ExtraRows.jsx'
 import HeadLine from './HeadLine.jsx'
 import CustomBlock, { ConfigBlock, AddBlockButton } from './CustomBlock.jsx'
-import { cellKey, fmtShort, fmtDMY, fmtDow, weekNum, iso, listIdFor, guessFilter, baseTitle, locText, blockName, effBlock } from './util.js'
+import { cellKey, fmtShort, fmtDMY, fmtDow, weekNum, iso, listIdFor, guessFilter, baseTitle, locText, blockName, effBlock, hdrClass } from './util.js'
 
 export default function WeekView({ config, dates, days, onPatch, onOpen }) {
   const { fix } = useContext(Lookup)
@@ -92,7 +92,7 @@ export default function WeekView({ config, dates, days, onPatch, onOpen }) {
                 <th className="sticky" style={{ top: 40 + i * 42 }}>{h.label}</th>
                 {dates.map((d) => (
                   <th key={d} style={{ top: 40 + i * 42 }}>
-                    <select value={days[d]?.header?.[h.id] ?? ''} onChange={(e) => onPatch(d, { header: { [h.id]: e.target.value } })}>
+                    <select className={hdrClass(h.id, days[d]?.header?.[h.id])} value={days[d]?.header?.[h.id] ?? ''} onChange={(e) => onPatch(d, { header: { [h.id]: e.target.value } })}>
                       <option value="">—</option>{(config.lists[h.list] || []).map((o) => <option key={o}>{o}</option>)}
                     </select>
                   </th>

@@ -39,3 +39,13 @@ export const effBlock = (b, day) => {
   const o = day?.overrides?.[b.id]
   return o ? { ...b, ...o } : { ...b, rows: [...b.rows, ...(day?.extra?.[b.id] || [])] }
 }
+
+// Couleur des listes d'en-tête : validation (Validé vert / Estimé bleu), niveau (jaune), groupes de commandement (violet)
+export const hdrClass = (id, v) => {
+  const t = String(v ?? '').trim().toLowerCase()
+  if (!t) return ''
+  if (id === 'validation') return t.startsWith('valid') ? 'hc-green' : t.startsWith('estim') ? 'hc-blue' : ''
+  if (id === 'niveau') return 'hc-yellow'
+  if (id === 'gdc') return 'hc-violet'
+  return ''
+}

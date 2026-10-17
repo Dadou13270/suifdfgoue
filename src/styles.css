@@ -230,3 +230,9 @@ table.week.wv td{overflow:hidden}
 @media(max-width:1100px){.rowgrid{grid-template-columns:repeat(auto-fill,minmax(300px,1fr))}}
 @media(max-width:640px){.rowgrid{grid-template-columns:1fr}}
 .rowgrid .addline{align-self:start;flex-wrap:wrap}
+
+select.hc-green{background:#dcfce7;border-color:#16a34a;color:#14532d}
+select.hc-blue{background:#dbeafe;border-color:#2563eb;color:#1e3a8a}
+select.hc-yellow{background:#fef9c3;border-color:#ca8a04;color:#713f12}
+select.hc-violet{background:#ede9fe;border-color:#8b5cf6;color:#4c1d95}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]) select.hc-green{background:#14532d;color:#dcfce7}:root:not([data-theme=light]) select.hc-blue{background:#1e3a8a;color:#dbeafe}:root:not([data-theme=light]) select.hc-yellow{background:#713f12;color:#fef9c3}:root:not([data-theme=light]) select.hc-violet{background:#4c1d95;color:#ede9fe}}
