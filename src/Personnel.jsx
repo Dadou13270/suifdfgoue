@@ -105,7 +105,12 @@ export default function Personnel({ c, set, config, role, selfId, dirty }) {
           ))}
         </div>
       )}
-      <h3>Personnel</h3>
+      <h3>Personnel <span className="muted">{shown.length}{shown.length !== P.list.length ? `/${P.list.length}` : ''}</span></h3>
+      <div className="line wrap small">
+        {fdfs.map((f) => <span className="chip" key={f}>{f} : {P.list.filter((p) => p.fdf === f).length}</span>)}
+        <span className="chip">Sans FDF : {P.list.filter((p) => !p.fdf).length}</span>
+        <span className="chip">Comptes liés : {P.list.filter((p) => P.linkOf(p)).length}</span>
+      </div>
       <div className="subbar">
         <input className="short" placeholder="Rechercher…" value={q} onChange={(e) => setQ(e.target.value)} />
         <div className="actions">

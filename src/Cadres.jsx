@@ -31,9 +31,11 @@ export default function Cadres({ config }) {
   const missing = [...byNom.values()]
   const [q, setQ] = useState('')
   const [g, setG] = useState('')
+  const [lt, setLt] = useState('')
+  const initial = (c) => (String(c.nom || '').trim().normalize('NFD').replace(/[̀-ͯ]/g, '').charAt(0).toUpperCase() || '#').replace(/[^A-Z]/, '#')
   const list = doc?.list || []
   const set = (id, p) => patch({ list: list.map((c) => (c.id === id ? { ...c, ...p } : c)) })
-  const shown = list.filter((c) => (!g || c.giff === g) && (!fd || fdfOf(c) === fd) && (!ml || (ml === 'oui' ? !!c.mil : !c.mil)) && (!q || `${c.nom} ${c.prenom}`.toLowerCase().includes(q.toLowerCase())))
+  const shown = list.filter((c) => (!lt || initial(c) === lt) && (!g || c.giff === g) && (!fd || fdfOf(c) === fd) && (!ml || (ml === 'oui' ? !!c.mil : !c.mil)) && (!q || `${c.nom} ${c.prenom}`.toLowerCase().includes(q.toLowerCase())))
     .sort((a, b) => String(a.nom || '').localeCompare(String(b.nom || ''), 'fr') || String(a.prenom || '').localeCompare(String(b.prenom || ''), 'fr'))
 
   return (
@@ -48,6 +50,13 @@ export default function Cadres({ config }) {
           <select className="short" value={g} onChange={(e) => setG(e.target.value)}><option value="">Tous GIFF</option><option>CENTRE</option><option>OUEST</option><option>EST</option></select>
           <button className="primary" onClick={() => patch({ list: [{ id: uid(), grade: '', nom: 'NOUVEAU', prenom: '', dispos: 0, giff: '', mil: false, fonct: '', cdg: '', aff: '', just: '' }, ...list] })}>+ Cadre</button>
         </div>
+      </div>
+      <div className="alpha" role="group" aria-label="Filtrer par lettre">
+        <button className={!lt ? 'on' : ''} onClick={() => setLt('')}>Tous</button>
+        {[...'ABCDEFGHIJKLMNOPQRSTUVWXYZ'].map((L) => {
+          const n = list.filter((c) => initial(c) === L).length
+          return <button key={L} className={lt === L ? 'on' : ''} disabled={!n && lt !== L} onClick={() => setLt(lt === L ? '' : L)} title={`${n} nom(s)`}>{L}</button>
+        })}
       </div>
       {doc && !list.length && <p className="muted">Liste vide. Importez les données du classeur (Paramètres › Données).</p>}
       <div className="tablewrap">
