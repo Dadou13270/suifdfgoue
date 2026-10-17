@@ -218,3 +218,6 @@ h3{margin:18px 0 6px}
 .blocksep{margin-top:14px}
 table.week{table-layout:fixed;min-width:1500px}
 @media(max-width:700px){table.week{min-width:1400px}}
+
+.notif{display:flex;align-items:center;gap:8px;margin-top:6px}
+.notif.done .ok{color:#15803d;font-weight:600;font-size:.9em}

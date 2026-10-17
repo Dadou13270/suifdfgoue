@@ -1,4 +1,5 @@
 import { createPortal } from 'react-dom'
+import { getActor } from './store.js'
 import React, { createContext, useContext, useEffect, useId, useState } from 'react'
 
 export const Lookup = createContext({ fix: (t) => t })
@@ -105,6 +106,20 @@ export function LocField({ value, onChange, lists, compact }) {
 }
 
 // Astreinte / Caserné : type + lieu + horaires
+export function NotifyField({ value, onChange, compact, label = 'CIS informés' }) {
+  const v = value && value.at ? value : null
+  const fmt = (t) => new Date(t).toLocaleString('fr-FR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })
+  const who = (getActor().email || '').split('@')[0]
+  return (
+    <div className={`notif ${v ? 'done' : ''} ${compact ? 'compact' : ''}`}>
+      {v
+        ? <><span className="ok" title={v.by ? `par ${v.by}` : ''}>✔ {label} · {fmt(v.at)}{v.by && !compact ? ` · ${v.by}` : ''}</span>
+            <button className="link" onClick={() => onChange(null)} aria-label="Annuler la notification">✕</button></>
+        : <button onClick={() => onChange({ at: Date.now(), by: who })}>🔔 {label}</button>}
+    </div>
+  )
+}
+
 export function DutyField({ value, onChange, lists, compact }) {
   const o = value && typeof value === 'object' ? value : {}
   const types = lists?.astreinte?.length ? lists.astreinte : ['Astreinte', 'Caserné']

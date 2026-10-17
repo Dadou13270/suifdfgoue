@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { EngineCell, TextField, LocField } from './Cell.jsx'
+import { EngineCell, TextField, LocField, NotifyField } from './Cell.jsx'
 import { cellKey, uid, listIdFor, effBlock } from './util.js'
 
 export const newBlock = () => ({ id: uid(), title: 'Autre bloc', head: false, location: false, rows: [{ id: uid(), label: 'Ligne 1' }] })
@@ -41,7 +41,7 @@ export function BlockCard({ b, day, config, onPatch, compact, update, onDelete, 
           <div className="row" key={r.id}>
             <label>{r.label}</label>
             <EngineCell compact={compact} listId={listIdFor(r)} cell={day.cells?.[cellKey(b.id, r.id)]} legend={config.legend}
-              onChange={(c) => onPatch({ cells: { [cellKey(b.id, r.id)]: c } })} />
+              onChange={(c) => onPatch({ cells: { [cellKey(b.id, r.id)]: c }, ...(day.notif?.[b.id] && (c?.text || '') !== (day.cells?.[cellKey(b.id, r.id)]?.text || '') ? { notif: { [b.id]: null } } : {}) })} />
           </div>
         ))}
         {b.location && (
@@ -50,6 +50,7 @@ export function BlockCard({ b, day, config, onPatch, compact, update, onDelete, 
             <LocField compact={compact} value={day.locs?.[b.id]} lists={config.lists} onChange={(v) => onPatch({ locs: { [b.id]: v } })} />
           </div>
         )}
+        {b.rows.length > 0 && <NotifyField label={b.section === 'cdt' ? 'Cadres informés' : 'CIS informés'} compact={compact} value={day.notif?.[b.id]} onChange={(v) => onPatch({ notif: { [b.id]: v } })} />}
       </div>
     </section>
   )

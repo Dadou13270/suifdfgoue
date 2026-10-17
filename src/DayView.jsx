@@ -1,5 +1,5 @@
 import React, { useContext, useState } from 'react'
-import { EngineCell, TextField, Lookup, LocField, DutyField } from './Cell.jsx'
+import { EngineCell, TextField, Lookup, LocField, DutyField, NotifyField } from './Cell.jsx'
 import { cellKey, listIdFor, guessFilter, blockName } from './util.js'
 import { isAddable } from './ExtraRows.jsx'
 import HeadLine from './HeadLine.jsx'
@@ -34,7 +34,7 @@ function Block({ b, config, day, onPatch }) {
             <div className="row" key={r.id}>
               <label>{r.label}</label>
               <EngineCell cis={day.headCis?.[b.id]} filter={guessFilter(r)} listId={listIdFor(r)} cell={day.cells?.[cellKey(b.id, r.id)]} legend={config.legend}
-                onChange={(c) => onPatch({ cells: { [cellKey(b.id, r.id)]: c } })} />
+                onChange={(c) => onPatch({ cells: { [cellKey(b.id, r.id)]: c }, ...(day.notif?.[b.id] && (c?.text || '') !== (day.cells?.[cellKey(b.id, r.id)]?.text || '') ? { notif: { [b.id]: null } } : {}) })} />
             </div>
           ))}
           {b.duty && (
@@ -49,6 +49,7 @@ function Block({ b, config, day, onPatch }) {
               <LocField value={day.locs?.[b.id]} lists={config.lists} onChange={(v) => onPatch({ locs: { [b.id]: v } })} />
             </div>
           )}
+          {b.rows.length > 0 && <NotifyField label={b.section === 'cdt' ? 'Cadres informés' : 'CIS informés'} value={day.notif?.[b.id]} onChange={(v) => onPatch({ notif: { [b.id]: v } })} />}
         </div>
       )}
     </section>

@@ -52,6 +52,7 @@ async function write(path, data, merge) {
 /* ---------- journal d'activité : activity/{YYYY-MM-DD} = { items: [...] } ---------- */
 let actor = { email: '', role: '' }
 export const setActor = (a) => { actor = a }
+export const getActor = () => actor
 const NOLOG = /^(activity|meta|usersdemo)\b/
 const short = (v) => { const s = v == null ? '' : typeof v === 'string' ? v : JSON.stringify(v); return s.length > 70 ? s.slice(0, 67) + '…' : s }
 const flat = (o, pre = '', depth = 0, out = {}) => {

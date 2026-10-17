@@ -39,9 +39,12 @@ function Datalists({ config, fleet, cadres }) {
 }
 
 export default function App() {
-  const { user, role, setLocalRole, login, register, logout, verified, resendVerify, refreshVerify } = useAuth()
+  const { user, role: realRole, setLocalRole, login, register, logout, verified, resendVerify, refreshVerify } = useAuth()
+  // Super administrateur : peut visualiser l'appli avec les droits d'un autre rôle (affichage seulement)
+  const [viewAs, setViewAs] = useState('')
+  const role = realRole === 'superadmin' && viewAs ? viewAs : realRole
   const ready = !!user && role !== undefined && role !== 'pending' && role !== 'refused'
-  setActor({ email: user?.email || '', role: role || '' })
+  setActor({ email: user?.email || '', role: realRole || '' })
   const [rightsDoc] = useDoc('config/rights', !!user && role !== undefined)
   setRights(rightsDoc?.roles)
   const [config, saveConfig] = useConfig(ready)
@@ -139,7 +142,10 @@ export default function App() {
           {MODE === 'local'
             ? <select className="short rolesel" aria-label="Rôle simulé (essai)" value={role} onChange={(e) => setLocalRole(e.target.value)} title="Essai : simuler un rôle">
                 {['superadmin', 'admin', 'chefcolonne', 'ogg'].map((r) => <option key={r} value={r}>{ROLES[r].label}</option>)}</select>
-            : <span className="chip rolechip">{ROLES[role]?.label}</span>}
+            : realRole === 'superadmin'
+              ? <select className="short rolesel" aria-label="Voir l'application comme" value={viewAs || 'superadmin'} onChange={(e) => setViewAs(e.target.value === 'superadmin' ? '' : e.target.value)} title="Super administrateur : voir l'application avec les droits d'un autre rôle (affichage seulement)">
+                  {['superadmin', 'admin', 'chefcolonne', 'ogg'].map((r) => <option key={r} value={r}>{ROLES[r].label}</option>)}</select>
+              : <span className="chip rolechip">{ROLES[role]?.label}</span>}
           <button onClick={exportPdf} disabled={pdfBusy} aria-label="Copie d'écran PDF" title="Copie d'écran en PDF, à envoyer par e-mail">📄 <span className="hide-sm">{pdfBusy ? 'PDF…' : 'PDF / Mail'}</span></button>
           {canTab(role, 'settings') && <button onClick={() => setPage('settings')} aria-label="Paramètres">⚙ <span className="hide-sm">Paramètres</span>{waitingCount > 0 && <span className="chip">{waitingCount}</span>}</button>}
           {MODE === 'firebase' && <button onClick={logout} aria-label="Déconnexion">⏻</button>}
