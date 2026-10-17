@@ -1,0 +1,69 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signed() { return request.auth != null; }
+    function me() { return get(/databases/$(database)/documents/users/$(request.auth.uid)).data; }
+    function has() { return signed() && exists(/databases/$(database)/documents/users/$(request.auth.uid)); }
+    function isRole(r) { return has() && me().role in r; }
+    // Comptes validés uniquement : « pending » (en attente) et « refused » ne lisent rien
+    function active() { return isRole(['superadmin','admin','chefcolonne','ogg']); }
+
+    // Annuaire des rôles par e-mail (écrit par superadmin/admin depuis « Gestion du personnel »)
+    function emailKey() { return request.auth.token.email.lower(); }
+    function verified() { return signed() && request.auth.token.email_verified == true; }
+    function rosterPath() { return /databases/$(database)/documents/roster/$(emailKey()); }
+    // Auto-attribution : e-mail vérifié + fiche dans l'annuaire + rôle identique à celui de l'annuaire (jamais superadmin)
+    function selfRole(newRole) {
+      return verified() && exists(rosterPath()) && get(rosterPath()).data.role == newRole && newRole in ['admin','chefcolonne','ogg'];
+    }
+    match /roster/{d} {
+      allow read: if signed() && (isRole(['superadmin','admin']) || (request.auth.token.email != null && request.auth.token.email.lower() == d));
+      allow write: if isRole(['superadmin','admin']);
+    }
+
+    // Rôles : superadmin | admin | chefcolonne | ogg | pending
+    match /users/{uid} {
+      allow read: if signed();
+      // 1er compte (avant meta/init) = superadmin ; ensuite uniquement « pending »
+      allow create: if signed() && request.auth.uid == uid &&
+        (request.resource.data.role == 'pending' || !exists(/databases/$(database)/documents/meta/init) || selfRole(request.resource.data.role));
+      allow update: if (request.auth.uid == uid && selfRole(request.resource.data.role) && request.resource.data.email == resource.data.email) ||
+        isRole(['superadmin']) ||
+        (isRole(['admin']) && resource.data.role != 'superadmin' && request.resource.data.role != 'superadmin');
+      allow delete: if isRole(['superadmin']);
+    }
+    match /meta/{d} {
+      allow read: if signed();
+      allow create: if signed() && !exists(/databases/$(database)/documents/meta/init);
+    }
+    // Droits par rôle : config/rights (modifiable par superadmin / admin), à défaut valeurs par défaut ci-dessous
+    function rightsPath() { return /databases/$(database)/documents/config/rights; }
+    function defaults(r) {
+      return {
+        'admin': ['dispositif','plannings','engins','calendrier','carto','cadres','settings','users'],
+        'chefcolonne': ['dispositif','plannings','engins','carto','cadres'],
+        'ogg': ['dispositif','engins','carto']
+      }.get(r, []);
+    }
+    function tabsOf(r) {
+      return exists(rightsPath()) && get(rightsPath()).data.roles.keys().hasAny([r])
+        ? get(rightsPath()).data.roles[r] : defaults(r);
+    }
+    function allowed(tab) { return has() && (me().role == 'superadmin' || tab in tabsOf(me().role)); }
+
+    match /config/rights {
+      allow read: if signed();
+      allow write: if isRole(['superadmin']) ||
+        (isRole(['admin']) && (!exists(rightsPath()) ||
+          request.resource.data.roles.get('admin', defaults('admin')) == get(rightsPath()).data.roles.get('admin', defaults('admin'))));
+    }
+    match /config/{d}   { allow read: if active() || d == 'rights'; allow write: if d != 'rights' && allowed('settings'); }
+    match /calendar/{d} { allow read: if active(); allow write: if allowed('calendrier'); }
+    match /days/{d}     { allow read: if active(); allow write: if allowed('dispositif'); }
+    match /fleet/{d}    { allow read: if active(); allow write: if allowed('engins'); }
+    match /planning/{d} { allow read: if active(); allow write: if allowed('plannings'); }
+    match /personnel/{d} { allow read: if active(); allow write: if isRole(['superadmin','admin']); }
+    match /activity/{d} { allow read: if isRole(['superadmin','admin']); allow create, update: if has(); }
+    match /cadres/{d}   { allow read: if active(); allow write: if allowed('cadres'); }
+  }
+}
