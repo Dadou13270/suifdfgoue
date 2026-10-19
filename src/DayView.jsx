@@ -124,8 +124,16 @@ export default function DayView({ config, day, onPatch, role }) {
       <Legend legend={config.legend} />
       {rows.map((r, i) => (
         <React.Fragment key={i}>
-          {!custom && !edit && i === 0 && defRows[0].some((id) => byId[id]?.section === 'cdt') && <h3 className="sectitle">{config.cdtTitle || 'Chaîne de commandement'}</h3>}
-          {!custom && !edit && i === 1 && defRows[0].some((id) => byId[id]?.section === 'cdt') && <h3 className="sectitle">Dispositif</h3>}
+          {(() => {
+            const isC = (id) => byId[id]?.section === 'cdt'
+            const hasC = (x) => x.some(isC); const hasM = (x) => x.some((id) => !isC(id))
+            const prev = rows[i - 1]
+            const anyC = rows.some(hasC)
+            return <>
+              {hasC(r) && !(prev && hasC(prev)) && <h3 className="sectitle">{config.cdtTitle || 'Chaîne de commandement'}</h3>}
+              {anyC && hasM(r) && !rows.slice(0, i).some(hasM) && <h3 className="sectitle">Dispositif</h3>}
+            </>
+          })()}
           <div className="grid rowgrid" style={{ '--n': 4 }} onDragOver={edit ? (e) => e.preventDefault() : undefined}>
             {r.map(cell)}
             {edit && <div className="lay-end" onDragOver={(e) => e.preventDefault()} onDrop={(e) => { e.preventDefault(); if (drag) mv((x) => moveToRowEnd(x, drag, i)); setDrag(null) }}>⇥ ici</div>}
