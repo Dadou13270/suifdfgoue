@@ -18,7 +18,8 @@ export const guessFilter = (row) => {
 }
 export const listIdFor = (row) => {
   const f = guessFilter(row)
-  return !f ? 'eng-list' : f === '@names' ? 'dl-names' : `dl-${f.replace(/\W/g, '_')}`
+  if (f === '@names') { const m = /FDF\s*([345])/i.exec(row.label || ''); return m ? `dl-fdf${m[1]}` : 'dl-names' }   // chaîne de commandement : seules les personnes du FDF de la ligne
+  return !f ? 'eng-list' : `dl-${f.replace(/\W/g, '_')}`
 }
 // Emplacement + horaires : ancien format (texte) ou {place,start,end}
 export const locOf = (v) => (v && typeof v === 'object' ? v : { place: v || '', start: '', end: '' })

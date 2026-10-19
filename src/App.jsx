@@ -3,7 +3,7 @@ import { MODE, useAuth, useConfig, useDays, useDoc, setActor } from './store.js'
 import LOGO from './logo.js'
 import { DEFAULT_CONFIG } from './defaults.js'
 import { Lookup } from './Cell.jsx'
-import { makeFix } from './autofill.js'
+import { makeFix, cadreLabel } from './autofill.js'
 import useAutoFill from './useAutoFill.js'
 import { iso, addDays, fmtLong, mondayOf, daysBetween, guessFilter, weekNum } from './util.js'
 import DayView from './DayView.jsx'
@@ -23,7 +23,9 @@ import { captureToPdf, sharePdf } from './exportPdf.js'
 
 // Listes déroulantes : chaque ligne ne propose que les engins de son type (VLTT, CCFM…)
 function Datalists({ config, fleet, cadres, pers }) {
-  const cdg = useMemo(() => { const gr = (config.fdfGrades || DEFAULT_CONFIG.fdfGrades).FDF3 || []; const pf = new Map(pers.map((p) => [String(p.nom).trim().toUpperCase(), p.fdf])); const l = [...new Set(cadres.filter((c) => { const f = pf.get(String(c.nom || '').trim().toUpperCase()); return f ? f === 'FDF3' : gr.includes(c.grade) }).map((c) => c.nom).filter(Boolean))].sort(); return l.length ? l : [...new Set(cadres.map((c) => c.nom))].sort() }, [cadres, pers, config])
+  const uniqBy = (l) => { const m = new Map(); l.forEach((c) => c.nom && !m.has(c.nom) && m.set(c.nom, c)); return [...m.values()].sort((x, y) => x.nom.localeCompare(y.nom)) }
+  const byFdf = (F) => { const gr = (config.fdfGrades || DEFAULT_CONFIG.fdfGrades)[F] || []; const pf = new Map(pers.map((p) => [String(p.nom).trim().toUpperCase(), p.fdf])); return uniqBy(cadres.filter((c) => { const f = pf.get(String(c.nom || '').trim().toUpperCase()); return f ? f === F : gr.includes(c.grade) })) }
+  const cdg = useMemo(() => { const gr = (config.fdfGrades || DEFAULT_CONFIG.fdfGrades).FDF3 || []; const pf = new Map(pers.map((p) => [String(p.nom).trim().toUpperCase(), p.fdf])); const l = cadres.filter((c) => { const f = pf.get(String(c.nom || '').trim().toUpperCase()); return f ? f === 'FDF3' : gr.includes(c.grade) }); return uniqBy(l.length ? l : cadres) }, [cadres, pers, config])
   const filters = useMemo(() => [...new Set(config.blocks.flatMap((b) => b.rows.map(guessFilter)).filter((f) => f && f !== '@names'))], [config])
   const ok = (e) => config.statuses.find((s) => s.id === e.status)?.avail !== false
   const lab = (e) => `${e.code} ${e.cis}`.trim()
@@ -35,9 +37,10 @@ function Datalists({ config, fleet, cadres, pers }) {
           {fleet.filter((e) => ok(e) && e.code.toUpperCase().startsWith(f.toUpperCase() + (/\d$/.test(f) ? '-' : ''))).map((e) => <option key={e.id} value={lab(e)} />)}
         </datalist>
       ))}
-      <datalist id="dl-mil">{(() => { const m = [...new Set(cadres.filter((c) => c.mil).map((c) => c.nom))].sort(); return (m.length ? m : [...new Set(cadres.map((c) => c.nom))].sort()).map((n) => <option key={n} value={n} />) })()}</datalist>
-      <datalist id="dl-cdg">{cdg.map((n) => <option key={n} value={n} />)}</datalist>
-      <datalist id="dl-names">{[...new Set(cadres.map((c) => c.nom))].sort().map((n) => <option key={n} value={n} />)}</datalist>
+      <datalist id="dl-mil">{(() => { const m = cadres.filter((c) => c.mil); return uniqBy(m.length ? m : cadres).map((c) => <option key={c.nom} value={cadreLabel(c)} />) })()}</datalist>
+      {(config.lists.fdf || DEFAULT_CONFIG.lists.fdf).map((F) => <datalist key={F} id={`dl-${F.toLowerCase()}`}>{byFdf(F).map((c) => <option key={c.nom} value={cadreLabel(c)} />)}</datalist>)}
+      <datalist id="dl-cdg">{cdg.map((c) => <option key={c.nom} value={cadreLabel(c)} />)}</datalist>
+      <datalist id="dl-names">{uniqBy(cadres).map((c) => <option key={c.nom} value={cadreLabel(c)} />)}</datalist>
       <datalist id="place-list">{(config.lists.emplacements || []).map((x) => <option key={x} value={x} />)}</datalist>
     </>
   )

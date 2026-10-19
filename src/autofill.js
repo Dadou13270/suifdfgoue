@@ -3,6 +3,9 @@ import { cellKey } from './util.js'
 const esc = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 
 // Complète la saisie : « CCFM-99 » -> « CCFM-99 VIT », « MAIRE » -> « MAIRE (CHM) »
+// « GRADE NOM (AFF) » : grade avant le nom, affectation après
+export const cadreLabel = (c) => [c.grade, c.nom, /^[A-Z]{2,4}$/.test(c.aff || '') ? `(${c.aff})` : ''].filter(Boolean).join(' ')
+
 export function makeFix(fleet = [], cadres = []) {
   const count = {}
   fleet.forEach((e) => { count[e.code.toLowerCase()] = (count[e.code.toLowerCase()] || 0) + 1 })
@@ -10,8 +13,9 @@ export function makeFix(fleet = [], cadres = []) {
   return (text) => {
     let t = (text || '').trim()
     if (!t) return t
-    const cad = cadres.find((c) => c.nom && c.nom.toLowerCase() === t.toLowerCase())
-    if (cad && cad.aff && /^[A-Z]{2,4}$/.test(cad.aff)) return `${cad.nom} (${cad.aff})`
+    const tl = t.toLowerCase()
+    const cad = cadres.find((c) => c.nom && (c.nom.toLowerCase() === tl || cadreLabel(c).toLowerCase() === tl || `${c.grade || ''} ${c.nom}`.trim().toLowerCase() === tl))
+    if (cad) { const l = cadreLabel(cad); if (l !== cad.nom) return l }
     uniq.forEach((e) => {
       const re = new RegExp(`(^|[\\s(\\-/+])(${esc(e.code)})(?![\\w-])(?!\\s+${esc(e.cis)}(?![\\w]))`, 'gi')
       t = t.replace(re, (_m, a) => `${a}${e.code} ${e.cis}`)

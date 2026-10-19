@@ -83,8 +83,8 @@ h3{margin:18px 0 6px}
 @media print{.top,.banner,.dot{display:none}}
 
 /* --- navigation et pages --- */
-.nav{display:flex;gap:4px;overflow-x:auto;padding:8px 0;border-bottom:1px solid var(--line);scrollbar-width:none}
-.nav button{display:flex;gap:6px;align-items:center;white-space:nowrap;border-color:transparent;background:none}
+.nav{display:flex;gap:6px;overflow-x:auto;padding:8px 0;border-bottom:1px solid var(--line);scrollbar-width:none}
+.nav button{display:flex;gap:6px;align-items:center;white-space:nowrap}
 .nav .on{background:var(--accent);color:#fff;border-color:var(--accent)}
 .ni{opacity:.8}
 .subbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between;margin:4px 0 12px}
@@ -130,7 +130,7 @@ h3{margin:18px 0 6px}
 @media (max-width:900px){.planlayout{grid-template-columns:1fr}.totals{position:static;max-height:none}}
 @media (max-width:640px){
   .nav{position:fixed;bottom:0;left:0;right:0;z-index:20;background:var(--card);border-top:1px solid var(--line);border-bottom:0;justify-content:space-around;padding:6px max(6px,env(safe-area-inset-left,0px)) calc(6px + env(safe-area-inset-bottom,0px)) max(6px,env(safe-area-inset-right,0px));overflow:visible}
-  .nav button{flex-direction:column;gap:0;font-size:.68em;padding:4px 2px;min-height:44px;flex:1;min-width:0}
+  .nav button{border-color:transparent;background:none;flex-direction:column;gap:0;font-size:.68em;padding:4px 2px;min-height:44px;flex:1;min-width:0}
   .nav .ni{font-size:1.5em;line-height:1}
   .app{padding-bottom:84px}
 }
