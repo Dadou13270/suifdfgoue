@@ -318,3 +318,6 @@ select.hc-violet{background:#ede9fe;border-color:#8b5cf6;color:#4c1d95}
 .engage.aladin.done .eng{color:#7c3aed}.engage.aladin.done .engnote{border-color:#7c3aed}
 
 .aladn{color:#7c3aed;font-weight:600}
+.notifbar{gap:6px;flex-wrap:nowrap}.notifbar>*{min-width:0}.notifbar .engage:not(.done),.notifbar .notif:not(.done){flex:0 0 auto}.notifbar .engage.done{flex:1 1 100%}
+.notifbar button{padding:6px 9px;font-size:.88em;white-space:nowrap;min-height:34px}
+.notifbar:has(.engage.done){flex-wrap:wrap}
