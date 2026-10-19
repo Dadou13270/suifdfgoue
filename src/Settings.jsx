@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { DEFAULT_CONFIG } from './defaults.js'
-import { uid, guessFilter } from './util.js'
-import { writeDoc } from './store.js'
+import { uid, guessFilter, baseTitle } from './util.js'
+import { writeDoc, useDoc } from './store.js'
 import { applySeed } from './seed.js'
 import Users from './Users.jsx'
 import ListesIO from './ListesIO.jsx'
@@ -32,6 +32,32 @@ function Affichage({ c, set }) {
         </select>
       </label>
       <label>Couleur principale<input type="color" value={c.accent} onChange={(e) => set({ accent: e.target.value })} /></label>
+    </div>
+  )
+}
+
+function Mobilisation({ c, set }) {
+  const levels = c.lists.niveau || []
+  const grey = (n) => c.mobil?.[n] || []
+  const toggle = (n, id) => set({ mobil: { ...(c.mobil || {}), [n]: grey(n).includes(id) ? grey(n).filter((x) => x !== id) : [...grey(n), id] } })
+  const toggleCol = (n, on) => set({ mobil: { ...(c.mobil || {}), [n]: on ? c.blocks.map((b) => b.id) : [] } })
+  const toggleRow = (id, on) => set({ mobil: Object.fromEntries(levels.map((n) => [n, on ? [...new Set([...grey(n), id])] : grey(n).filter((x) => x !== id)])) })
+  return (
+    <div>
+      <p className="muted small">Cochez les blocs à <b>griser</b> pour chaque niveau de mobilisation. Dans le dispositif (jour et semaine), un bloc est grisé quand le niveau choisi pour le jour le coche. Un bloc grisé reste modifiable.</p>
+      <div className="tablewrap">
+        <table className="week mobtable">
+          <thead><tr><th className="sticky">Bloc</th>{levels.map((n) => (
+            <th key={n} className="mc"><div>{n}</div><input type="checkbox" aria-label={`Tout griser au niveau ${n}`} checked={c.blocks.length > 0 && grey(n).length >= c.blocks.length} onChange={(e) => toggleCol(n, e.target.checked)} /></th>
+          ))}<th className="mc">Tous</th></tr></thead>
+          <tbody>{c.blocks.map((b) => (
+            <tr key={b.id}><th className="sticky">{baseTitle(b)}</th>
+              {levels.map((n) => <td key={n} className="mc"><input type="checkbox" aria-label={`${baseTitle(b)} grisé au niveau ${n}`} checked={grey(n).includes(b.id)} onChange={() => toggle(n, b.id)} /></td>)}
+              <td className="mc"><input type="checkbox" aria-label={`Griser ${baseTitle(b)} à tous les niveaux`} checked={levels.length > 0 && levels.every((n) => grey(n).includes(b.id))} onChange={(e) => toggleRow(b.id, e.target.checked)} /></td>
+            </tr>
+          ))}</tbody>
+        </table>
+      </div>
     </div>
   )
 }
@@ -235,8 +261,38 @@ function Auto({ c, set }) {
 }
 
 function Engins({ c, set }) {
+  const crew = c.crew || DEFAULT_CONFIG.crew
+  const [fleet] = useDoc('fleet/main')
+  const known = new Set(crew.map((x) => String(x.key).toUpperCase()))
+  const todo = [...new Set((fleet?.engins || []).map((e) => String(e.code || '').split('-')[0].toUpperCase()).filter(Boolean))].filter((k) => !known.has(k)).sort()
   return (
     <div>
+      <h3>Effectif par engin (PAX)</h3>
+      <p className="muted small">Le compteur « x PAX » en haut de chaque bloc additionne l'équipage des engins saisis. Le type est lu au début du code (CCFM-12 → CCFM).</p>
+      {crew.map((x, i) => (
+        <div className="line wrap" key={i}>
+          <input className="short" value={x.key} placeholder="Type (CCFM)" onChange={(e) => set({ crew: upd(crew, i, { key: e.target.value.toUpperCase() }) })} />
+          <input type="number" min="0" className="short" value={x.pax} onChange={(e) => set({ crew: upd(crew, i, { pax: Number(e.target.value) }) })} /> <span className="muted">hommes</span>
+          <button className="danger" onClick={() => set({ crew: del(crew, i) })}>✕</button>
+        </div>
+      ))}
+      {todo.length > 0 && (
+        <div className="card">
+          <b>Types du parc sans effectif</b> <span className="muted small">(non comptés tant que le nombre d'hommes n'est pas renseigné)</span>
+          {todo.map((k) => (
+            <div className="line wrap" key={k}>
+              <span className="ecode">{k}</span>
+              <input type="number" min="0" className="short" placeholder="hommes" value="" onChange={(e) => e.target.value !== '' && set({ crew: [...crew, { key: k, pax: Number(e.target.value) }] })} />
+              <span className="muted">hommes</span>
+            </div>
+          ))}
+        </div>
+      )}
+      <div className="line wrap">
+        <button onClick={() => set({ crew: [...crew, { key: '', pax: 2 }] })}>+ Type d'engin</button>
+        <span>SIGAR (par moyen) :</span><input type="number" min="0" className="short" value={c.sigarPax ?? DEFAULT_CONFIG.sigarPax} onChange={(e) => set({ sigarPax: Number(e.target.value) })} /> <span className="muted">hommes</span>
+        <span>Chaîne de commandement (par personne) :</span><input type="number" min="0" className="short" value={c.cdtPax ?? DEFAULT_CONFIG.cdtPax} onChange={(e) => set({ cdtPax: Number(e.target.value) })} /> <span className="muted">PAX</span>
+      </div>
       <h3>Statuts des engins</h3>
       {c.statuses.map((s, i) => (
         <div className="line wrap" key={s.id}>
@@ -287,7 +343,7 @@ function Donnees({ c, setAll, role, config, selfId }) {
   )
 }
 
-const TABS = [['aff', 'Affichage'], ['blocs', 'Blocs'], ['listes', 'Listes & en-tête'], ['leg', 'Légende'], ['plan', 'Plannings'], ['auto', 'Remplissage auto'], ['eng', 'Engins & CIS'], ['staff', 'Gestion du personnel'], ['users', 'Rôles'], ['log', 'Activité'], ['data', 'Données']]
+const TABS = [['aff', 'Affichage'], ['blocs', 'Blocs'], ['listes', 'Listes & en-tête'], ['mob', 'Niveau de mobilisation'], ['leg', 'Légende'], ['plan', 'Plannings'], ['auto', 'Remplissage auto'], ['eng', 'Engins & CIS'], ['staff', 'Gestion du personnel'], ['users', 'Rôles'], ['log', 'Activité'], ['data', 'Données']]
 
 export default function Settings({ config, onSave, onBack, onLogout, role, selfId }) {
   const [c, setC] = useState(config)
@@ -311,6 +367,7 @@ export default function Settings({ config, onSave, onBack, onLogout, role, selfI
         {tab === 'aff' && <Affichage c={c} set={set} />}
         {tab === 'blocs' && <Blocs c={c} set={set} />}
         {tab === 'listes' && <Listes c={c} set={set} />}
+        {tab === 'mob' && <Mobilisation c={c} set={set} />}
         {tab === 'leg' && <Legende c={c} set={set} />}
         {tab === 'auto' && <Auto c={c} set={set} />}
         {tab === 'plan' && <Plannings c={c} set={set} />}

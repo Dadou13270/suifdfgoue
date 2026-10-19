@@ -203,13 +203,26 @@ function migrateMil(d) {
   if (!d?.plannings || d.plannings.some((p) => p.cols?.some((c) => c.mil !== undefined))) return d
   return { ...d, plannings: d.plannings.map((p) => (p.id === 'chefsgiff' ? { ...p, cols: p.cols.map((c) => (/^M\d/.test(c.id) ? { ...c, mil: true } : c)) } : p)) }
 }
+function migrateMil2(d) {
+  if (!d?.plannings || d.milFix2) return d
+  return { ...d, milFix2: true, plannings: d.plannings.map((p) => (p.id === 'chefsgiff' ? { ...p, cols: p.cols.map((c) => (/^[ABC]$/.test(c.id) && c.mil ? { ...c, mil: false } : c)) } : p)) }
+}
 function migrateAddable(d) {
   if (!d?.blocks || d.addableFixed) return d
   return { ...d, addableFixed: true, blocks: d.blocks.map((b) => (b.id === 'mip' || b.id === 'autres' ? { ...b, addable: false } : b)) }
 }
+function migrateEngage(d) {
+  if (!d?.statuses || d.statuses.some((s) => s.id === 'engage')) return d
+  return { ...d, statuses: [...d.statuses, { id: 'engage', label: 'Engagé', color: '#b91c1c', avail: false }] }
+}
+function migrateSigarCcfs(d) {
+  if (!d?.blocks) return d
+  return { ...d, blocks: d.blocks.map((b) => (/^sigar/.test(b.id) ? { ...b, rows: b.rows.map((r) => (r.filter === undefined ? { ...r, filter: 'CCFS6' } : r)) } : b)) }
+}
 function migrate(d) {
-  d = migrateAddable(d)
-  d = migrateMil(d)
+  d = migrateSigarCcfs(d)
+  d = migrateEngage(migrateAddable(d))
+  d = migrateMil2(migrateMil(d))
   d = migrateFdf(migrateCadre(d))
   d = migrateDuty(migrateTag(migrateHeadCis(migrateSigar(d))))
   if (!d || d.cdtTitle !== undefined || !d.blocks) return d
