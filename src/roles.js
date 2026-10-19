@@ -27,10 +27,13 @@ export const EDITABLE_ROLES = ['admin', 'chefcolonne', 'ogg']
 
 // Droits en vigueur (config/rights, modifiable par le super administrateur et l'administrateur)
 let live = null
-export const setRights = (r) => { live = r || null }
+let liveV = 0
+export const setRights = (r, v) => { live = r || null; liveV = v || 0 }
 export const getAccess = () => {
   const o = { ...DEFAULT_ACCESS }
   if (live) EDITABLE_ROLES.forEach((r) => { if (Array.isArray(live[r])) o[r] = live[r] })
+  // onglet « Relèves » ajouté après l'enregistrement des droits : ouvert par défaut tant que la matrice n'a pas été réenregistrée
+  if (live && liveV < 2) EDITABLE_ROLES.forEach((r) => { if (DEFAULT_ACCESS[r].includes('releves') && !o[r].includes('releves')) o[r] = [...o[r], 'releves'] })
   o.superadmin = DEFAULT_ACCESS.superadmin
   o.admin = [...new Set([...o.admin, 'settings', 'users'])]   // l'administrateur garde toujours Paramètres et Rôles
   EDITABLE_ROLES.forEach((r) => { if (r !== 'admin') o[r] = o[r].filter((t) => t !== 'users') })

@@ -51,7 +51,7 @@ export default function App() {
   const ready = !!user && role !== undefined && role !== 'pending' && role !== 'refused'
   setActor({ email: user?.email || '', role: realRole || '', name: user?.displayName || '' })
   const [rightsDoc] = useDoc('config/rights', !!user && role !== undefined)
-  setRights(rightsDoc?.roles)
+  setRights(rightsDoc?.roles, rightsDoc?.tabsV)
   const [config, saveConfig] = useConfig(ready)
   const [date, setDate] = useState(iso(new Date()))
   const [view, setView] = useState('day')

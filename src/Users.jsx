@@ -9,7 +9,7 @@ export default function Users({ role, selfId, config }) {
   const personOf = (u) => P.list.find((p) => p.email && (u.email || '').toLowerCase() === p.email.trim().toLowerCase())
   const opts = assignableBy(role)
   const access = getAccess()
-  const save = (next) => writeDoc('config/rights', { roles: next }, false)
+  const save = (next) => writeDoc('config/rights', { roles: next, tabsV: 2 }, false)
   const toggle = (r, t) => {
     const cur = Object.fromEntries(EDITABLE_ROLES.map((x) => [x, [...access[x]]]))
     cur[r] = cur[r].includes(t) ? cur[r].filter((x) => x !== t) : [...cur[r], t]

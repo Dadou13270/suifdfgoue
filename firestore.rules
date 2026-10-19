@@ -49,7 +49,9 @@ service cloud.firestore {
       return exists(rightsPath()) && get(rightsPath()).data.roles.keys().hasAny([r])
         ? get(rightsPath()).data.roles[r] : defaults(r);
     }
-    function allowed(tab) { return has() && (me().role == 'superadmin' || tab in tabsOf(me().role)); }
+    // « releves » ajouté après l'enregistrement des droits : ouvert par défaut tant que la matrice n'a pas été réenregistrée (tabsV)
+    function relevesLegacy(r) { return exists(rightsPath()) && !get(rightsPath()).data.keys().hasAny(['tabsV']) && 'releves' in defaults(r); }
+    function allowed(tab) { return has() && (me().role == 'superadmin' || tab in tabsOf(me().role) || (tab == 'releves' && relevesLegacy(me().role))); }
 
     match /config/rights {
       allow read: if signed();
