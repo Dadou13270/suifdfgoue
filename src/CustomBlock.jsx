@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { EngineCell, TextField, LocField, NotifyBar } from './Cell.jsx'
+import { EngineCell, TextField, LocField, DutyField, NotifyBar } from './Cell.jsx'
 import { cellKey, uid, listIdFor, guessFilter, effBlock, paxOf } from './util.js'
 import { useEngage } from './engage.js'
 import { BlockTools } from './BlockTools.jsx'
@@ -26,6 +26,7 @@ export function BlockCard({ off, b, day, config, onPatch, compact, update, onDel
       {edit && (
         <div className="bedit-inline">
           <label className="chk"><input type="checkbox" checked={!!b.head} onChange={(e) => update({ head: e.target.checked })} /> Ligne d'intitulé</label>
+          <label className="chk"><input type="checkbox" checked={!!b.duty} onChange={(e) => update({ duty: e.target.checked })} /> Astreinte / Caserné + lieu + horaires</label>
           <label className="chk"><input type="checkbox" checked={!!b.location} onChange={(e) => update({ location: e.target.checked })} /> Emplacement et horaires</label>
           {b.rows.map((r) => (
             <div className="line" key={r.id}>
@@ -49,6 +50,12 @@ export function BlockCard({ off, b, day, config, onPatch, compact, update, onDel
               onChange={(c) => onPatch({ cells: { [cellKey(b.id, r.id)]: c }, ...(day.notif?.[b.id] && (c?.text || '') !== (day.cells?.[cellKey(b.id, r.id)]?.text || '') ? { notif: { [b.id]: null } } : {}) })} />
           </div>
         ))}
+        {b.duty && (
+          <div className="row loc">
+            <label>🕒 Astreinte / Caserné</label>
+            <DutyField compact={compact} value={day.duty?.[b.id]} lists={config.lists} onChange={(v) => onPatch({ duty: { [b.id]: v } })} />
+          </div>
+        )}
         {b.location && (
           <div className="row loc">
             <label>📍 Emplacement et horaires</label>
@@ -76,7 +83,7 @@ export default function CustomBlock({ b, day, config, onPatch, compact }) {
 export function ConfigBlock({ b, day, config, onPatch, compact, off }) {
   const eb = effBlock(b, day)
   const has = !!day.overrides?.[b.id]
-  const update = (p, extra = {}) => onPatch({ overrides: { [b.id]: { title: eb.title, head: !!eb.head, location: !!eb.location, headHint: eb.headHint || '', rows: eb.rows, ...p } }, ...extra })
+  const update = (p, extra = {}) => onPatch({ overrides: { [b.id]: { title: eb.title, head: !!eb.head, duty: !!eb.duty, location: !!eb.location, headHint: eb.headHint || '', rows: eb.rows, ...p } }, ...extra })
   const suffix = day.names?.[b.id] ? ` · ${day.names[b.id]}` : ''
   return <BlockCard {...{ off, b: eb, day, config, onPatch, compact, update, titleExtra: suffix, onReset: has ? () => onPatch({ overrides: { [b.id]: null } }) : null }} />
 }

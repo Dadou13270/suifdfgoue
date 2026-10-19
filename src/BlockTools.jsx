@@ -6,7 +6,7 @@ export function BlockTools({ b, day, onPatch, config }) {
   const src = (config.blocks || []).find((x) => x.id === b.id) || b
   const optional = src.show === false && !!day.shown?.[b.id]
   const dup = () => {
-    const copy = { id: uid(), title: `${baseTitle(b)} (copie)`, head: !!b.head, location: !!b.location, headHint: b.headHint || '', rows: b.rows.map((r) => ({ id: uid(), label: r.label, ...(r.filter ? { filter: r.filter } : {}) })) }
+    const copy = { id: uid(), title: `${baseTitle(b)} (copie)`, head: !!b.head, duty: !!b.duty, location: !!b.location, headHint: b.headHint || '', rows: b.rows.map((r) => ({ id: uid(), label: r.label, ...(r.filter ? { filter: r.filter } : {}) })) }
     onPatch({ customBlocks: [...(day.customBlocks || []), copy] })
   }
   return (
