@@ -72,15 +72,16 @@ export const strip = ({ eng, prev, ...e }) => e
 export function useEngage() {
   const { fleet = [], statuses = [], date } = useContext(Lookup)
   // b : bloc effectif ; v : nouvel état d'engagement (null = désengagé)
-  return (b, day, v) => {
+  return (b, day, v, kind = 'engaged') => {
     if (!fleet.length) return
-    const key = `${date}|${b.id}`
-    const had = day.engaged?.[b.id]?.at
+    const al = kind === 'aladin'
+    const key = `${date}|${b.id}${al ? '|aladin' : ''}`
+    const had = day[kind]?.[b.id]?.at
     let list = fleet
     if (v && v.at && !had) {
-      const ids = enginesOf(fleet, b, day)
+      const ids = new Set([...enginesOf(fleet, b, day)].filter((id) => fleet.find((x) => x.id === id)?.status !== ENG))
       if (!ids.size) return
-      const meta = { key, date, group: blockName(b, day), at: v.at, by: v.by || '', note: v.note || '' }
+      const meta = { key, date, kind: al ? 'aladin' : 'engaged', group: blockName(b, day), at: v.at, by: v.by || '', note: v.note || '' }
       list = fleet.map((e) => (ids.has(e.id) ? { ...e, prev: e.status === ENG ? e.prev : e.status, status: ENG, eng: meta } : e))
     } else if (v && v.at) {
       list = fleet.map((e) => (e.eng?.key === key ? { ...e, eng: { ...e.eng, note: v.note || '' } } : e))

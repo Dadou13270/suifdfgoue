@@ -39,7 +39,7 @@ export default function Engins({ config, date }) {
   const placed = usePlaced(eng, date)
   const usable = shown.filter((e) => e.status !== ENG && !placed.has(e.id) && stOf(e.status).avail).length
   const engaged = shown.filter((e) => e.status === ENG)
-  const groups = [...new Set(engaged.map((e) => e.eng?.group || 'Engagés'))]
+  const groups = [...new Set(engaged.map((e) => e.eng?.key || e.eng?.group || 'Engagés'))]
   const count = (id) => shown.filter((e) => e.status === id).length
 
   return (
@@ -77,14 +77,14 @@ export default function Engins({ config, date }) {
       )}
       {engaged.length > 0 && (
         <section className="card engaged">
-          <h3 className="cathead">🔥 Engagés <span className="muted">{engaged.length}</span></h3>
+          <h3 className="cathead">🔥 Engagés / 🚨 Aladin <span className="muted">{engaged.length}</span></h3>
           <p className="muted small">Touchez un engin pour le désengager : il redevient disponible.</p>
           {groups.map((g) => {
-            const list = engaged.filter((e) => (e.eng?.group || 'Engagés') === g)
+            const list = engaged.filter((e) => (e.eng?.key || e.eng?.group || 'Engagés') === g)
             const meta = list[0]?.eng
             return (
               <div key={g} className="enggroup">
-                <b>{g}</b>{meta?.note && <span className="muted"> — {meta.note}</span>}{meta?.date && <span className="muted small"> · {meta.date}</span>}
+                <b>{meta?.kind === 'aladin' ? '🚨 ' : '🔥 '}{meta?.group || g}{meta?.kind === 'aladin' ? ' (Aladin)' : ''}</b>{meta?.note && <span className="muted"> — {meta.note}</span>}{meta?.date && <span className="muted small"> · {meta.date}</span>}
                 <div className="engchips">{list.map((e) => (
                   <button key={e.id} className="engchip" title="Désengager" onClick={() => save(releaseOne(eng, e.id, sts))}>{e.code} <span className="cis">{e.cis}</span> ✕</button>
                 ))}</div>

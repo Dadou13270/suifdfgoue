@@ -64,13 +64,14 @@ export default function Stats({ config }) {
         const name = blockName(b, day)
         const t = typeOf(b)
         const eng = !!day.engaged?.[b.id]?.at
+        const ala = !!day.aladin?.[b.id]?.at
         const head = String(day.heads?.[b.id] || '').trim()
         const realHead = head && !/non planifi/i.test(head)
         const cellTexts = b.rows.map((r) => String(day.cells?.[cellKey(b.id, r.id)]?.text || '').trim())
         const done = realHead || cellTexts.some(Boolean)
         if (done) {
-          const row = byType.get(t) || { type: t, n: 0, eng: 0, groups: new Map(), days: new Set() }
-          row.n++; if (eng) row.eng++; row.days.add(d); row.groups.set(name, (row.groups.get(name) || 0) + 1)
+          const row = byType.get(t) || { type: t, n: 0, eng: 0, al: 0, groups: new Map(), gal: new Map(), days: new Set() }
+          row.n++; if (eng) row.eng++; if (ala) { row.al++; row.gal.set(name, (row.gal.get(name) || 0) + 1) } row.days.add(d); row.groups.set(name, (row.groups.get(name) || 0) + 1)
           byType.set(t, row)
         }
         if (realHead && b.section !== 'cdt') { const c = find(head); if (c) addAg(c, `Chef ${t}`, d, name, eng) }
@@ -80,7 +81,7 @@ export default function Stats({ config }) {
             const c = find(text)
             const e = /\s-\s(.+)$/.exec(text)?.[1] || ''
             const aff = c?.aff || /\(([A-Z]{2,5})\)/.exec(norm(text))?.[1] || ''
-            chain.push({ date: d, group: name, pos: r.label || '', grade: c?.grade || '', nom: c?.nom || text.replace(/\s-\s.+$/, '').replace(/\s*\([A-Z]{2,5}\)/, ''), aff, eng: e, engaged: eng })
+            chain.push({ date: d, group: name, pos: r.label || '', grade: c?.grade || '', nom: c?.nom || text.replace(/\s-\s.+$/, '').replace(/\s*\([A-Z]{2,5}\)/, ''), aff, eng: e, engaged: eng, aladin: ala })
             if (c) addAg(c, `${t} · ${r.label || ''}`.trim(), d, name, eng)
           })
         }
@@ -125,8 +126,8 @@ export default function Stats({ config }) {
             <div className="card stcard" key={t.type}>
               <div className="stn">{t.n}</div>
               <b>{t.type}</b>
-              <div className="muted small">{t.days.size} jour(s){t.eng ? ` · dont ${t.eng} engagé(s)` : ''}</div>
-              <div className="small">{[...t.groups].sort((a, b) => b[1] - a[1]).map(([g, n]) => <div key={g}>{g} <b>× {n}</b></div>)}</div>
+              <div className="muted small">{t.days.size} jour(s){t.eng ? ` · dont ${t.eng} engagé(s)` : ''}{t.al ? ` · 🚨 ${t.al} Aladin` : ''}</div>
+              <div className="small">{[...t.groups].sort((a, b) => b[1] - a[1]).map(([g, n]) => <div key={g}>{g} <b>× {n}</b>{t.gal.get(g) ? <span className="aladn"> · 🚨 Aladin × {t.gal.get(g)}</span> : null}</div>)}</div>
             </div>
           ))}
         </div>
@@ -143,7 +144,7 @@ export default function Stats({ config }) {
       {!shown.length ? <p className="muted">Aucune chaîne de commandement renseignée sur la période.</p> : (
         <div className="tablewrap"><table className="week">
           <thead><tr><th>Date</th><th>Groupe</th><th>Position</th><th>Grade</th><th>Nom</th><th>Aff.</th><th>Engin</th><th>Engagé</th></tr></thead>
-          <tbody>{shown.map((r, i) => <tr key={i}><td>{fmtShort(r.date)}</td><td>{r.group}</td><td>{r.pos}</td><td>{r.grade}</td><td><b>{r.nom}</b></td><td>{r.aff}</td><td>{r.eng}</td><td>{r.engaged ? '🔥' : ''}</td></tr>)}</tbody></table></div>
+          <tbody>{shown.map((r, i) => <tr key={i}><td>{fmtShort(r.date)}</td><td>{r.group}</td><td>{r.pos}</td><td>{r.grade}</td><td><b>{r.nom}</b></td><td>{r.aff}</td><td>{r.eng}</td><td>{r.engaged ? '🔥' : ''}{r.aladin ? '🚨' : ''}</td></tr>)}</tbody></table></div>
       )}
       </>}
 

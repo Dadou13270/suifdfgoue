@@ -53,7 +53,7 @@ export function BlockCard({ off, b, day, config, onPatch, compact, update, onDel
             <LocField compact={compact} value={day.locs?.[b.id]} lists={config.lists} onChange={(v) => onPatch({ locs: { [b.id]: v } })} />
           </div>
         )}
-        {b.rows.length > 0 && <NotifyBar label={b.section === 'cdt' ? 'Cadres informés' : 'CIS informés'} compact={compact} notif={day.notif?.[b.id]} onNotif={(v) => onPatch({ notif: { [b.id]: v } })} engaged={day.engaged?.[b.id]} onEngaged={(v) => { engage(b, day, v); onPatch({ engaged: { [b.id]: v } }) }} />}
+        {b.rows.length > 0 && <NotifyBar label={b.section === 'cdt' ? 'Cadres informés' : 'CIS informés'} compact={compact} notif={day.notif?.[b.id]} onNotif={(v) => onPatch({ notif: { [b.id]: v } })} engaged={day.engaged?.[b.id]} onEngaged={(v) => { engage(b, day, v); onPatch({ engaged: { [b.id]: v } }) }} aladin={day.aladin?.[b.id]} onAladin={(v) => { engage(b, day, v, 'aladin'); onPatch({ aladin: { [b.id]: v } }) }} />}
       </div>
     </section>
   )

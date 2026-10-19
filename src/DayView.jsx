@@ -52,7 +52,7 @@ function Block({ b, config, day, onPatch }) {
               <LocField value={day.locs?.[b.id]} lists={config.lists} onChange={(v) => onPatch({ locs: { [b.id]: v } })} />
             </div>
           )}
-          {b.rows.length > 0 && <NotifyBar label={b.section === 'cdt' ? 'Cadres informés' : 'CIS informés'} notif={day.notif?.[b.id]} onNotif={(v) => onPatch({ notif: { [b.id]: v } })} engaged={day.engaged?.[b.id]} onEngaged={(v) => { engage(effBlock(b, day), day, v); onPatch({ engaged: { [b.id]: v } }) }} />}
+          {b.rows.length > 0 && <NotifyBar label={b.section === 'cdt' ? 'Cadres informés' : 'CIS informés'} notif={day.notif?.[b.id]} onNotif={(v) => onPatch({ notif: { [b.id]: v } })} engaged={day.engaged?.[b.id]} onEngaged={(v) => { engage(effBlock(b, day), day, v); onPatch({ engaged: { [b.id]: v } }) }} aladin={day.aladin?.[b.id]} onAladin={(v) => { engage(effBlock(b, day), day, v, 'aladin'); onPatch({ aladin: { [b.id]: v } }) }} />}
         </div>
       )}
     </section>

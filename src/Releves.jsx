@@ -96,7 +96,7 @@ export default function Releves({ config }) {
             const hist = log.filter((l) => l.key === g.key)
             return (
               <div className="card rel-group" key={g.key}>
-                <div className="rel-head"><b>🔥 {g.meta.group}</b><span className="muted small">{fmtD(g.meta.date)} · engagé {fmtT(g.meta.at)}{g.meta.by ? ` · ${g.meta.by}` : ''}</span></div>
+                <div className="rel-head"><b>{g.meta.kind === 'aladin' ? '🚨' : '🔥'} {g.meta.group}{g.meta.kind === 'aladin' ? ' (Aladin)' : ''}</b><span className="muted small">{fmtD(g.meta.date)} · {g.meta.kind === 'aladin' ? 'aladin' : 'engagé'} {fmtT(g.meta.at)}{g.meta.by ? ` · ${g.meta.by}` : ''}</span></div>
                 {g.meta.note && <div className="small rel-note">{g.meta.note}</div>}
                 {g.list.map((e) => {
                   const on = sel?.id === e.id

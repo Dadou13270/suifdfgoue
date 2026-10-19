@@ -315,3 +315,6 @@ select.hc-violet{background:#ede9fe;border-color:#8b5cf6;color:#4c1d95}
 .stack>button.danger{color:#c0262d}
 
 .englist li.placed .ecode,.englist li.placed .cis{opacity:.5;text-decoration:line-through}.status.placedb{background:#fef3c7;color:#92400e;border-color:#f59e0b;cursor:default;--st:#d97706}
+.engage.aladin.done .eng{color:#7c3aed}.engage.aladin.done .engnote{border-color:#7c3aed}
+
+.aladn{color:#7c3aed;font-weight:600}

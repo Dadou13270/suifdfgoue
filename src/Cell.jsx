@@ -157,30 +157,31 @@ export function NotifyField({ value, onChange, compact, label = 'CIS informés' 
 
 function stamp() { const a = getActor(); return { at: Date.now(), by: a.name || (a.email || '').split('@')[0] } }
 
-export function EngageField({ value, onChange, compact }) {
+export function EngageField({ value, onChange, compact, icon = '🔥', word = 'Engagé', ph = 'Commentaire (lieu du feu, mission…)' }) {
   const v = value && value.at ? value : null
   const [note, setNote] = useState(v?.note || '')
   useEffect(() => setNote(v?.note || ''), [v?.note])
   const fmt = (t) => new Date(t).toLocaleString('fr-FR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })
   return (
-    <div className={`engage ${v ? 'done' : ''} ${compact ? 'compact' : ''}`}>
+    <div className={`engage ${v ? 'done' : ''} ${compact ? 'compact' : ''} ${word === 'Aladin' ? 'aladin' : ''}`}>
       <div className="notif">
         {v
-          ? <><span className="eng" title={v.by ? `par ${v.by}` : ''}>🔥 Engagé · {fmt(v.at)}{v.by ? ` · ${v.by}` : ''}</span>
-              <button className="link" onClick={() => onChange(null)} aria-label="Annuler l'engagement">✕</button></>
-          : <button onClick={() => onChange(stamp())}>🔥 Engagé</button>}
+          ? <><span className="eng" title={v.by ? `par ${v.by}` : ''}>{icon} {word} · {fmt(v.at)}{v.by ? ` · ${v.by}` : ''}</span>
+              <button className="link" onClick={() => onChange(null)} aria-label={`Annuler : ${word}`}>✕</button></>
+          : <button onClick={() => onChange(stamp())}>{icon} {word}</button>}
       </div>
-      {v && <input className="engnote" aria-label="Commentaire sur l'engagement" placeholder="Commentaire (lieu du feu, mission…)" value={note}
+      {v && <input className="engnote" aria-label={`Commentaire : ${word}`} placeholder={ph} value={note}
         onChange={(e) => setNote(e.target.value)} onBlur={() => note !== (v.note || '') && onChange({ ...v, note })} />}
     </div>
   )
 }
 
-export function NotifyBar({ notif, engaged, onNotif, onEngaged, label, compact }) {
+export function NotifyBar({ notif, engaged, onNotif, onEngaged, aladin, onAladin, label, compact }) {
   return (
     <div className="notifbar">
       <NotifyField label={label} compact={compact} value={notif} onChange={onNotif} />
       <EngageField compact={compact} value={engaged} onChange={onEngaged} />
+      {onAladin && <EngageField compact={compact} value={aladin} onChange={onAladin} icon="🚨" word="Aladin" ph="Commentaire (motif Aladin…)" />}
     </div>
   )
 }
