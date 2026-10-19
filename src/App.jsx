@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { MODE, useAuth, useConfig, useDays, useDoc, setActor } from './store.js'
+import LOGO from './logo.js'
 import { DEFAULT_CONFIG } from './defaults.js'
 import { Lookup } from './Cell.jsx'
 import { makeFix } from './autofill.js'
@@ -128,6 +129,7 @@ export default function App() {
     <div className="app">
       <header className="top">
         <div className="brand">
+          <img src={LOGO} alt="Pompiers 13" className="logo" />
           <b>{config.title}</b> <span className="muted">{config.groupement}</span>
           {left !== null && left >= 0 && <span className="chip">J-{left} {config.deadlineLabel}</span>}
         </div>
