@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import { useDoc } from './store.js'
 import { TextField } from './Cell.jsx'
 import { uid } from './util.js'
@@ -13,8 +13,14 @@ export default function Engins({ config }) {
   const [adding, setAdding] = useState(false)
   const [msg, setMsg] = useState('')
   const sts = config.statuses
-  const eng = doc?.engins || []
-  const cats = doc?.cats?.length ? doc.cats : [...new Set(eng.map((e) => e.cat))]
+  const fixCat = (e) => { const m = e.cat === 'CCFM' && /^CCFS(6|9)\b/.exec(String(e.code || '').toUpperCase()); return m ? `CCFS${m[1]}` : e.cat }
+  const eng = useMemo(() => (doc?.engins || []).map((e) => { const c = fixCat(e); return c === e.cat ? e : { ...e, cat: c } }), [doc])
+  const cats = useMemo(() => {
+    const base = doc?.cats?.length ? [...doc.cats] : [...new Set(eng.map((e) => e.cat))]
+    ;['CCFS6', 'CCFS9'].forEach((n) => { if (eng.some((e) => e.cat === n) && !base.includes(n)) base.splice(Math.max(base.indexOf('CCFM'), -1) + 1 + (n === 'CCFS9' && base.includes('CCFS6') ? base.indexOf('CCFS6') - base.indexOf('CCFM') : 0), 0, n) })
+    return base
+  }, [doc, eng])
+  useEffect(() => { if (doc && eng.some((e, i) => e !== doc.engins[i])) patch({ engins: eng, cats }) }, [doc]) // eslint-disable-line
   const stOf = (id) => sts.find((s) => s.id === id) || { id, label: id, color: '#6b7280' }
   const save = (list) => patch({ engins: list })
   const cycle = (e) => { const i = sts.findIndex((s) => s.id === e.status); save(eng.map((x) => (x.id === e.id ? { ...x, status: sts[(i + 1) % sts.length].id } : x))) }
