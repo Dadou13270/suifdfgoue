@@ -292,3 +292,15 @@ select.hc-violet{background:#ede9fe;border-color:#8b5cf6;color:#4c1d95}
 .rel-pick.on{outline:2px solid #16a34a;background:#dcfce7}
 .rel-pick .pill{margin-left:auto;padding:1px 8px;border-radius:10px;border:1px solid var(--st);font-size:12px}
 .rel-filter input,.rel-filter select{flex:1 1 45%;width:auto;min-width:0}
+
+/* Statistiques */
+.stcards{grid-template-columns:repeat(auto-fill,minmax(210px,1fr))}
+.stcard .stn{font-size:2.2em;font-weight:700;color:var(--accent);line-height:1}
+.stdet{margin:10px 0}
+.stdet summary{cursor:pointer;font-weight:600;margin-bottom:6px}
+.stfilters{margin-bottom:8px;flex-wrap:wrap}
+.statpage .tablewrap{overflow:auto;max-width:100%}
+.statpage table.week{table-layout:auto;width:100%}
+.statpage table.week td,.statpage table.week th{text-align:left;padding:4px 8px}
+.stfilters input,.stfilters select{flex:1 1 200px;width:auto;min-width:0}
+.stsub{padding:4px 0 8px}.stag{cursor:pointer}.stag:hover{background:#f3f4f6}.stlist{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:2px 12px;padding:4px 0}

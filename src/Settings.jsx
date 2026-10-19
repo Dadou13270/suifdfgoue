@@ -1,3 +1,4 @@
+import Stats from './Stats.jsx'
 import React, { useState } from 'react'
 import { DEFAULT_CONFIG } from './defaults.js'
 import { uid, guessFilter, baseTitle } from './util.js'
@@ -343,7 +344,7 @@ function Donnees({ c, setAll, role, config, selfId }) {
   )
 }
 
-const TABS = [['aff', 'Affichage'], ['blocs', 'Blocs'], ['listes', 'Listes & en-tête'], ['mob', 'Niveau de mobilisation'], ['leg', 'Légende'], ['plan', 'Plannings'], ['auto', 'Remplissage auto'], ['eng', 'Engins & CIS'], ['staff', 'Gestion du personnel'], ['users', 'Rôles'], ['log', 'Activité'], ['data', 'Données']]
+const TABS = [['aff', 'Affichage'], ['blocs', 'Blocs'], ['listes', 'Listes & en-tête'], ['mob', 'Niveau de mobilisation'], ['leg', 'Légende'], ['plan', 'Plannings'], ['auto', 'Remplissage auto'], ['eng', 'Engins & CIS'], ['stats', 'Statistiques'], ['staff', 'Gestion du personnel'], ['users', 'Rôles'], ['log', 'Activité'], ['data', 'Données']]
 
 export default function Settings({ config, onSave, onBack, onLogout, role, selfId }) {
   const [c, setC] = useState(config)
@@ -372,6 +373,7 @@ export default function Settings({ config, onSave, onBack, onLogout, role, selfI
         {tab === 'auto' && <Auto c={c} set={set} />}
         {tab === 'plan' && <Plannings c={c} set={set} />}
         {tab === 'eng' && <Engins c={c} set={set} />}
+        {tab === 'stats' && <Stats config={config} />}
         {tab === 'staff' && <Personnel c={c} set={set} config={config} role={role} selfId={selfId} dirty={!saved} />}
         {tab === 'log' && <Activity config={config} />}
         {tab === 'users' && <Users role={role} selfId={selfId} config={config} />}
