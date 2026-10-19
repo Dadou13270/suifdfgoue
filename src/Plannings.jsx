@@ -40,7 +40,7 @@ export default function Plannings({ config, date, role }) {
     const pick = (f) => [...new Set(P.filter(f).map((p) => p.nom))].sort()
     const tries = [() => pick((p) => (!c.cadre || p.cadreEmploi === c.cadre) && (!c.fdf || p.fdf === c.fdf)), () => (c.cadre ? pick((p) => p.cadreEmploi === c.cadre) : []), () => (c.fdf ? pick((p) => p.fdf === c.fdf) : [])]
     if (c.mil) { const l = [...new Set((cadres?.list || []).filter((x) => x.mil && x.nom).map((x) => x.nom))].sort(); if (l.length) return l }
-    if (!c.mil && !c.fdf && c.cadre === 'Chef de groupe') { const l = [...new Set([...(cadres?.list || []).map((x) => x.nom), ...pick((p) => p.cadreEmploi === c.cadre)].filter(Boolean))].sort(); if (l.length) return l }
+    if (!c.mil && !c.fdf && c.cadre === 'Chef de groupe') { const f3 = new Set(P.filter((p) => p.fdf === 'FDF3').map((p) => String(p.nom).trim().toUpperCase())); const l = [...new Set((cadres?.list || []).map((x) => x.nom).filter((n) => n && f3.has(String(n).trim().toUpperCase())))].sort(); if (l.length) return l }
     if (!c.cadre && !c.fdf && !c.mil) return names
     for (const t of tries) { const l = t(); if (l.length) return l }
     return names
