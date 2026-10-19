@@ -48,12 +48,12 @@ function Mobilisation({ c, set }) {
       <div className="tablewrap">
         <table className="week mobtable">
           <thead><tr><th className="sticky">Bloc</th>{levels.map((n) => (
-            <th key={n} className="chk"><div>{n}</div><input type="checkbox" aria-label={`Tout griser au niveau ${n}`} checked={c.blocks.length > 0 && grey(n).length >= c.blocks.length} onChange={(e) => toggleCol(n, e.target.checked)} /></th>
-          ))}<th className="chk">Tous</th></tr></thead>
+            <th key={n} className="mc"><div>{n}</div><input type="checkbox" aria-label={`Tout griser au niveau ${n}`} checked={c.blocks.length > 0 && grey(n).length >= c.blocks.length} onChange={(e) => toggleCol(n, e.target.checked)} /></th>
+          ))}<th className="mc">Tous</th></tr></thead>
           <tbody>{c.blocks.map((b) => (
             <tr key={b.id}><th className="sticky">{baseTitle(b)}</th>
-              {levels.map((n) => <td key={n} className="chk"><input type="checkbox" aria-label={`${baseTitle(b)} grisé au niveau ${n}`} checked={grey(n).includes(b.id)} onChange={() => toggle(n, b.id)} /></td>)}
-              <td className="chk"><input type="checkbox" aria-label={`Griser ${baseTitle(b)} à tous les niveaux`} checked={levels.length > 0 && levels.every((n) => grey(n).includes(b.id))} onChange={(e) => toggleRow(b.id, e.target.checked)} /></td>
+              {levels.map((n) => <td key={n} className="mc"><input type="checkbox" aria-label={`${baseTitle(b)} grisé au niveau ${n}`} checked={grey(n).includes(b.id)} onChange={() => toggle(n, b.id)} /></td>)}
+              <td className="mc"><input type="checkbox" aria-label={`Griser ${baseTitle(b)} à tous les niveaux`} checked={levels.length > 0 && levels.every((n) => grey(n).includes(b.id))} onChange={(e) => toggleRow(b.id, e.target.checked)} /></td>
             </tr>
           ))}</tbody>
         </table>

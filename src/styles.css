@@ -239,7 +239,9 @@ select.hc-violet{background:#ede9fe;border-color:#8b5cf6;color:#4c1d95}
 
 .card.block.off{opacity:.5;filter:grayscale(1);background:color-mix(in srgb,var(--muted) 14%,var(--card))}
 .week td.off{opacity:.5;filter:grayscale(1);background:color-mix(in srgb,var(--muted) 18%,var(--card))}
-.mobtable td.chk,.mobtable th.chk{text-align:center;min-width:54px}
+.mobtable td.mc,.mobtable th.mc{text-align:center;min-width:54px;width:54px}
+.mobtable td.mc input,.mobtable th.mc input{width:auto;min-height:0}
+.mobtable th.mc div{font-weight:600;margin-bottom:2px}
 
 .notifbar{display:flex;flex-wrap:wrap;gap:6px 12px;align-items:flex-start;margin-top:6px}
 .notifbar .notif{margin-top:0}
