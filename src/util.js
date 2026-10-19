@@ -95,7 +95,7 @@ export const syncCadres = (cadresList, persList) => {
     if (n.grade !== c.grade || n.prenom !== c.prenom) changed = true
     out.push(n)
   })
-  const add = P.filter((p) => p.fdf && !seen.has(nn(p.nom)) && (seen.add(nn(p.nom)), true))
+  const add = P.filter((p) => !seen.has(nn(p.nom)) && (seen.add(nn(p.nom)), true))
     .map((p) => ({ id: uid(), grade: p.grade || '', nom: nn(p.nom), prenom: p.prenom || '', dispos: 0, giff: '', mil: false, fonct: '', cdg: '', aff: '', just: '' }))
   if (add.length) changed = true
   return changed ? [...add, ...out] : null

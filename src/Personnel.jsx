@@ -120,8 +120,6 @@ export default function Personnel({ c, set, config, role, selfId, dirty }) {
       <div className="subbar">
         <input className="short" placeholder="Rechercher…" value={q} onChange={(e) => setQ(e.target.value)} />
         <div className="actions">
-          <button onClick={importPlans} disabled={!todo.length} title="Ajoute les noms saisis dans les plannings, avec FDF et cadre d'emploi de leur colonne">Importer depuis les plannings{todo.length ? ` (${todo.length})` : ''}</button>
-          <button onClick={importCadres} disabled={!cadres?.list?.length}>Importer depuis les cadres</button>
           <button onClick={P.syncAll} disabled={!pending || dirty} title={dirty ? 'Enregistrez d’abord les paramètres' : ''}>Appliquer les droits{pending ? ` (${pending})` : ''}</button>
           <button className="primary" onClick={() => P.save([{ id: uid(), nom: 'NOUVEAU', prenom: '', grade: '', cadreEmploi: '', fdf: '', role: '', email: '' }, ...P.list])}>+ Personne</button>
         </div>
@@ -133,7 +131,7 @@ export default function Personnel({ c, set, config, role, selfId, dirty }) {
           return <button key={L} className={lt === L ? 'on' : ''} disabled={!n && lt !== L} onClick={() => setLt(lt === L ? '' : L)} title={`${n} nom(s)`}>{L}</button>
         })}
       </div>
-      {P.loaded && !P.list.length && <p className="muted">Aucun personnel. Ajoutez des personnes ou importez la liste des cadres.</p>}
+      {P.loaded && !P.list.length && <p className="muted">Aucun personnel. Ajoutez des personnes.</p>}
       <div className="tablewrap">
         <table className="week pertable">
           <thead><tr><th className="sticky">Nom</th><th>Prénom</th><th>Grade</th><th>FDF</th><th>Cadre d'emploi</th><th>Rôle dans l'application</th><th>E-mail du compte</th><th>Droits</th><th /></tr></thead>

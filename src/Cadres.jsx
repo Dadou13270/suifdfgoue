@@ -50,7 +50,6 @@ export default function Cadres({ config }) {
           <input className="short" placeholder="Rechercher…" value={q} onChange={(e) => setQ(e.target.value)} />
           <select className="short" value={ml} onChange={(e) => setMl(e.target.value)}><option value="">MIL : tous</option><option value="oui">MIL cochés</option><option value="non">Hors MIL</option></select>
           <select className="short" value={fd} onChange={(e) => setFd(e.target.value)}><option value="">Tous FDF</option>{fdfs.map((x) => <option key={x}>{x}</option>)}</select>
-          <button onClick={() => patch({ list: [...missing.map((p) => ({ id: uid(), grade: p.grade || '', nom: N(p.nom), prenom: p.prenom || '', dispos: 0, giff: '', mil: false, fonct: '', cdg: '', aff: '', just: '' })), ...list] })} disabled={!missing.length} title="Ajoute à la liste les noms présents dans Gestion du personnel ou saisis dans les plannings et absents des cadres">+ Noms manquants{missing.length ? ` (${missing.length})` : ''}</button>
           <select className="short" value={g} onChange={(e) => setG(e.target.value)}><option value="">Tous GIFF</option><option>CENTRE</option><option>OUEST</option><option>EST</option></select>
           <button className="primary" onClick={() => patch({ list: [{ id: uid(), grade: '', nom: 'NOUVEAU', prenom: '', dispos: 0, giff: '', mil: false, fonct: '', cdg: '', aff: '', just: '' }, ...list] })}>+ Cadre</button>
         </div>
