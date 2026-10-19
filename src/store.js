@@ -53,7 +53,7 @@ async function write(path, data, merge) {
 let actor = { email: '', role: '', name: '' }
 export const setActor = (a) => { actor = a }
 export const getActor = () => actor
-const NOLOG = /^(activity|meta|usersdemo)\b/
+const NOLOG = /^(activity|meta|usersdemo|presence)\b/
 const short = (v) => { const s = v == null ? '' : typeof v === 'string' ? v : JSON.stringify(v); return s.length > 70 ? s.slice(0, 67) + '…' : s }
 const flat = (o, pre = '', depth = 0, out = {}) => {
   if (o && typeof o === 'object' && !Array.isArray(o) && depth < 4) { Object.keys(o).forEach((k) => flat(o[k], pre ? `${pre}.${k}` : k, depth + 1, out)); if (!Object.keys(o).length && pre) out[pre] = {} }
