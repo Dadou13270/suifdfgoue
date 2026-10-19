@@ -9,8 +9,8 @@ const norm = (s) => String(s || '').toUpperCase()
 
 export default function Stats({ config }) {
   const today = iso(new Date())
-  const [from, setFrom] = useState(today.slice(0, 8) + '01')
-  const [to, setTo] = useState(today)
+  const [from, setFrom] = useState(() => { const d = new Date(); return iso(new Date(d.getFullYear(), d.getMonth(), 1, 12)) })
+  const [to, setTo] = useState(() => { const d = new Date(); return iso(new Date(d.getFullYear(), d.getMonth() + 1, 0, 12)) })
   const [q, setQ] = useState('')
   const [fg, setFg] = useState('')
   const [fp, setFp] = useState('')
@@ -26,12 +26,21 @@ export default function Stats({ config }) {
   const [days] = useDays(dates, true)
   const capped = from && to && from <= to && addDays(from, MAX_DAYS) < to
 
-  const preset = (k) => {
-    const d = new Date(); const y = d.getFullYear()
-    if (k === 'week') { const m = new Date(d); m.setDate(d.getDate() - ((d.getDay() + 6) % 7)); setFrom(iso(m)); setTo(today) }
-    else if (k === 'month') { setFrom(today.slice(0, 8) + '01'); setTo(today) }
-    else if (k === 'season') { setFrom(`${y}-06-01`); setTo(today < `${y}-09-30` ? today : `${y}-09-30`) }
-    else if (k === 'year') { setFrom(`${y}-01-01`); setTo(today) }
+  const [mode, setMode] = useState('month')
+  const ymd = (y, m, d) => iso(new Date(y, m, d, 12))
+  const range = (k, ref) => {
+    const r = new Date(ref + 'T12:00:00'); const y = r.getFullYear(); const m = r.getMonth()
+    if (k === 'week') { const mo = new Date(r); mo.setDate(r.getDate() - ((r.getDay() + 6) % 7)); const su = new Date(mo); su.setDate(mo.getDate() + 6); return [iso(mo), iso(su)] }
+    if (k === 'month') return [ymd(y, m, 1), ymd(y, m + 1, 0)]
+    if (k === 'season') return [ymd(y, 5, 1), ymd(y, 8, 30)]
+    return [ymd(y, 0, 1), ymd(y, 11, 31)]
+  }
+  const preset = (k) => { const [f, t] = range(k, today); setMode(k); setFrom(f); setTo(t) }
+  const shift = (dir) => {
+    if (mode === 'custom') { const n = Math.max(1, Math.round((new Date(to) - new Date(from)) / 864e5) + 1); setFrom(addDays(from, dir * n)); setTo(addDays(to, dir * n)); return }
+    const r = new Date(from + 'T12:00:00')
+    const ref = mode === 'week' ? addDays(from, 7 * dir) : mode === 'month' ? ymd(r.getFullYear(), r.getMonth() + dir, 15) : ymd(r.getFullYear() + dir, 5, 15)
+    const [f, t] = range(mode, ref); setFrom(f); setTo(t)
   }
 
   const { byType, chain, agents, cols } = useMemo(() => {
@@ -93,11 +102,15 @@ export default function Stats({ config }) {
     <div className="statpage">
       <div className="subbar">
         <b>Statistiques <span className="muted">{dates.length} jour(s){loaded ? '' : ' · chargement…'}</span></b>
-        <div className="actions">
-          <label className="muted small">Du <input type="date" value={from} onChange={(e) => setFrom(e.target.value)} /></label>
-          <label className="muted small">au <input type="date" value={to} onChange={(e) => setTo(e.target.value)} /></label>
-          <button onClick={() => preset('week')}>Semaine</button><button onClick={() => preset('month')}>Mois</button>
-          <button onClick={() => preset('season')}>Saison</button><button onClick={() => preset('year')}>Année</button>
+        <div className="stperiod">
+          <div className="seg">{[['week', 'Semaine'], ['month', 'Mois'], ['season', 'Saison'], ['year', 'Année']].map(([k, l]) => <button key={k} className={mode === k ? 'on' : ''} onClick={() => preset(k)}>{l}</button>)}</div>
+          <div className="stdates">
+            <button aria-label="Période précédente" onClick={() => shift(-1)}>‹</button>
+            <input type="date" aria-label="Du" value={from} onChange={(e) => { setMode('custom'); setFrom(e.target.value) }} />
+            <span className="muted">→</span>
+            <input type="date" aria-label="Au" value={to} onChange={(e) => { setMode('custom'); setTo(e.target.value) }} />
+            <button aria-label="Période suivante" onClick={() => shift(1)}>›</button>
+          </div>
         </div>
       </div>
       {capped && <p className="muted small">Période limitée à {MAX_DAYS} jours.</p>}

@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback, useRef } from 'react'
 import { initializeApp } from 'firebase/app'
-import { getFirestore, doc, collection, onSnapshot, setDoc, getDoc, arrayUnion } from 'firebase/firestore'
+import { getFirestore, doc, collection, onSnapshot, setDoc, getDoc, deleteDoc, arrayUnion } from 'firebase/firestore'
 import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, updateProfile, sendEmailVerification } from 'firebase/auth'
 import { DEFAULT_CONFIG } from './defaults.js'
 
@@ -269,4 +269,14 @@ export function useDoc(path, enabled = true) {
   const patch = useCallback((p) => write(path, p, true), [path])
   const replace = useCallback((p) => write(path, p, false), [path])
   return [d, patch, replace]
+}
+
+// Lecture ponctuelle / suppression d'un document (base de l'année)
+export async function readDoc(path) {
+  if (MODE === 'firebase') { const s = await getDoc(doc(db, ...path.split('/'))); return s.exists() ? s.data() : null }
+  return lsGet(path) || null
+}
+export async function removeDoc(path) {
+  if (MODE === 'firebase') await deleteDoc(doc(db, ...path.split('/')))
+  else { mem.delete(path); try { localStorage.removeItem(LS + path) } catch {} bus.dispatchEvent(new Event(path)) }
 }

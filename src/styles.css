@@ -304,3 +304,12 @@ select.hc-violet{background:#ede9fe;border-color:#8b5cf6;color:#4c1d95}
 .statpage table.week td,.statpage table.week th{text-align:left;padding:4px 8px}
 .stfilters input,.stfilters select{flex:1 1 200px;width:auto;min-width:0}
 .stsub{padding:4px 0 8px}.stag{cursor:pointer}.stag:hover{background:#f3f4f6}.stlist{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:2px 12px;padding:4px 0}
+.stperiod{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.stdates{display:flex;gap:6px;align-items:center}
+.stdates input[type=date]{width:150px;min-height:0}
+
+.ydb{max-width:420px}.ydb .stsub{flex-wrap:wrap;overflow:visible}.ydb-year{display:flex;flex-direction:column;gap:4px;font-weight:600;font-size:.9em}.ydb-year select,.ydb-imp select{width:100%;box-sizing:border-box}
+.ydb-imp{display:flex;flex-direction:column;gap:8px}.ydb-imp .filebtn{text-align:center}.ydb-imp .filebtn.off{opacity:.5;cursor:not-allowed}.ydb button{width:100%}
+.wrapnav{flex-wrap:wrap!important;overflow:visible!important}
+.stack>button,.stack>.filebtn,.stack>.ydb-imp>.filebtn{display:block;box-sizing:border-box;width:100%;text-align:center;font:inherit;font-size:1em;line-height:1.3;padding:10px 12px;border:1px solid var(--line);border-radius:8px;background:var(--card)}
+.stack>button.danger{color:#c0262d}

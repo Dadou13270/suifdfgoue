@@ -6,6 +6,7 @@ import { writeDoc, useDoc } from './store.js'
 import { applySeed } from './seed.js'
 import Users from './Users.jsx'
 import ListesIO from './ListesIO.jsx'
+import YearDb from './YearDb.jsx'
 import Personnel from './Personnel.jsx'
 import Activity from './Activity.jsx'
 import { canTab, isSuper } from './roles.js'
@@ -265,9 +266,12 @@ function Engins({ c, set }) {
   const crew = c.crew || DEFAULT_CONFIG.crew
   const [fleet] = useDoc('fleet/main')
   const known = new Set(crew.map((x) => String(x.key).toUpperCase()))
+  const [sub, setSub] = useState('crew')
   const todo = [...new Set((fleet?.engins || []).map((e) => String(e.code || '').split('-')[0].toUpperCase()).filter(Boolean))].filter((k) => !known.has(k)).sort()
   return (
     <div>
+      <nav className="tabs stsub">{[['crew', 'Effectifs par engin'], ['stat', 'Statuts'], ['bas', 'Bassins']].map(([k, l]) => <button key={k} className={sub === k ? 'on' : ''} onClick={() => setSub(k)}>{l}</button>)}</nav>
+      {sub === 'crew' && <>
       <h3>Effectif par engin (PAX)</h3>
       <p className="muted small">Le compteur « x PAX » en haut de chaque bloc additionne l'équipage des engins saisis. Le type est lu au début du code (CCFM-12 → CCFM).</p>
       {crew.map((x, i) => (
@@ -294,6 +298,8 @@ function Engins({ c, set }) {
         <span>SIGAR (par moyen) :</span><input type="number" min="0" className="short" value={c.sigarPax ?? DEFAULT_CONFIG.sigarPax} onChange={(e) => set({ sigarPax: Number(e.target.value) })} /> <span className="muted">hommes</span>
         <span>Chaîne de commandement (par personne) :</span><input type="number" min="0" className="short" value={c.cdtPax ?? DEFAULT_CONFIG.cdtPax} onChange={(e) => set({ cdtPax: Number(e.target.value) })} /> <span className="muted">PAX</span>
       </div>
+      </>}
+      {sub === 'stat' && <>
       <h3>Statuts des engins</h3>
       {c.statuses.map((s, i) => (
         <div className="line wrap" key={s.id}>
@@ -304,6 +310,8 @@ function Engins({ c, set }) {
         </div>
       ))}
       <button onClick={() => set({ statuses: [...c.statuses, { id: uid().toUpperCase(), label: 'Nouveau statut', color: '#6b7280', avail: false }] })}>+ Statut</button>
+      </>}
+      {sub === 'bas' && <>
       <h3>Bassins (carto CIS)</h3>
       {c.bassins.map((b, i) => (
         <div className="line wrap" key={i}>
@@ -314,6 +322,7 @@ function Engins({ c, set }) {
         </div>
       ))}
       <button onClick={() => set({ bassins: [...c.bassins, { name: 'Nouveau bassin', cis: [] }] })}>+ Bassin</button>
+      </>}
     </div>
   )
 }
@@ -329,17 +338,22 @@ function Donnees({ c, setAll, role, config, selfId }) {
     const f = e.target.files[0]; if (!f) return
     f.text().then((t) => { try { setAll({ ...DEFAULT_CONFIG, ...JSON.parse(t) }) } catch { alert('Fichier invalide') } })
   }
+  const [sub, setSub] = useState('year')
   return (
     <div className="stack">
-      <ListesIO config={config} role={role} selfId={selfId} />
-      <h3>Configuration et classeur</h3>
-      <button onClick={exp}>⭳ Exporter la configuration (JSON)</button>
-      <label className="filebtn">⭱ Importer une configuration<input type="file" accept="application/json" onChange={imp} hidden /></label>
-      <button onClick={seed} disabled={!isSuper(role)}>Importer les données du classeur Excel</button>
-      {!isSuper(role) && <p className="muted small">Import et réinitialisation : réservés au super administrateur.</p>}
-      {msg && <div className="banner">{msg}</div>}
-      <p className="muted small">Remplace les plannings, le parc d'engins, le calendrier perpétuel et la liste des cadres.</p>
-      <button className="danger" disabled={!isSuper(role)} onClick={() => confirm('Revenir à la configuration par défaut ?') && setAll(DEFAULT_CONFIG)}>Réinitialiser aux valeurs par défaut</button>
+      <nav className="tabs stsub wrapnav">{[['year', 'Base annuelle'], ['lists', 'Listes'], ['conf', 'Configuration']].map(([k, l]) => <button key={k} className={sub === k ? 'on' : ''} onClick={() => setSub(k)}>{l}</button>)}</nav>
+      {sub === 'year' && <YearDb role={role} />}
+      {sub === 'lists' && <ListesIO config={config} role={role} selfId={selfId} />}
+      {sub === 'conf' && <>
+        <h3>Configuration et classeur</h3>
+        <button onClick={exp}>⭳ Exporter la configuration (JSON)</button>
+        <label className="filebtn">⭱ Importer une configuration<input type="file" accept="application/json" onChange={imp} hidden /></label>
+        <button onClick={seed} disabled={!isSuper(role)}>Importer les données du classeur Excel</button>
+        {!isSuper(role) && <p className="muted small">Import et réinitialisation : réservés au super administrateur.</p>}
+        {msg && <div className="banner">{msg}</div>}
+        <p className="muted small">Remplace les plannings, le parc d'engins, le calendrier perpétuel et la liste des cadres.</p>
+        <button className="danger" disabled={!isSuper(role)} onClick={() => confirm('Revenir à la configuration par défaut ?') && setAll(DEFAULT_CONFIG)}>Réinitialiser aux valeurs par défaut</button>
+      </>}
     </div>
   )
 }
