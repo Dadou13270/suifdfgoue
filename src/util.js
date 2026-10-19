@@ -72,3 +72,19 @@ export const paxOf = (config, b, day) => {
 
 // Blocs grisés selon le niveau de mobilisation choisi (Paramètres › Niveau de mobilisation)
 export const isOff = (config, niveau, blockId) => !!niveau && (config.mobil?.[niveau] || []).includes(blockId)
+
+// Reporte grade et prénom de la fiche Personnel vers les cadres déjà présents (le Personnel fait foi)
+export const syncCadres = (cadresList, persList) => {
+  const nn = (x) => String(x || '').trim().toUpperCase()
+  const m = new Map((persList || []).filter((p) => p.nom).map((p) => [nn(p.nom), p]))
+  let changed = false
+  const out = (cadresList || []).map((c) => {
+    const p = m.get(nn(c.nom)); if (!p) return c
+    const n = { ...c }
+    if (p.grade && p.grade !== c.grade) n.grade = p.grade
+    if (p.prenom && p.prenom !== c.prenom) n.prenom = p.prenom
+    if (n.grade !== c.grade || n.prenom !== c.prenom) { changed = true; return n }
+    return c
+  })
+  return changed ? out : null
+}

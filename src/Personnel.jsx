@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react'
 import { useDoc, useUsers, subscribe, writeDoc } from './store.js'
 import { TextField } from './Cell.jsx'
 import { ROLES, assignableBy, canEditUser } from './roles.js'
-import { uid } from './util.js'
+import { uid, syncCadres } from './util.js'
 import { DEFAULT_CONFIG } from './defaults.js'
 
 // Personnel + droits déduits de la fonction. La fonction donne un rôle (config.fonctions) ;
@@ -43,9 +43,12 @@ export default function Personnel({ c, set, config, role, selfId, dirty }) {
   const nn = (x) => String(x || '').trim().toUpperCase()
   const addC = cadres ? (P.list || []).filter((p) => p.nom && p.fdf && !(cadres.list || []).some((x) => nn(x.nom) === nn(p.nom))) : []
   const addKey = addC.map((p) => nn(p.nom)).join('|')
+  const upC = cadres ? syncCadres(cadres.list, P.list) : null
+  const upKey = upC ? upC.map((c) => `${c.nom}${c.grade}${c.prenom}`).join('|') : ''
+  useEffect(() => { if (upC && !addC.length) patchCadres({ list: upC }) }, [upKey]) // eslint-disable-line
   useEffect(() => {
     if (!addC.length) return
-    patchCadres({ list: [...addC.map((p) => ({ id: uid(), grade: p.grade || '', nom: nn(p.nom), prenom: p.prenom || '', dispos: 0, giff: '', mil: false, fonct: '', cdg: '', aff: '', just: '' })), ...(cadres.list || [])] })
+    patchCadres({ list: [...addC.map((p) => ({ id: uid(), grade: p.grade || '', nom: nn(p.nom), prenom: p.prenom || '', dispos: 0, giff: '', mil: false, fonct: '', cdg: '', aff: '', just: '' })), ...(upC || cadres.list || [])] })
   }, [addKey]) // eslint-disable-line
   const [q, setQ] = useState('')
   const [lt, setLt] = useState('')
