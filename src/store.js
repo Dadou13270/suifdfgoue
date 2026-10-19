@@ -207,6 +207,10 @@ function migrateMil2(d) {
   if (!d?.plannings || d.milFix2) return d
   return { ...d, milFix2: true, plannings: d.plannings.map((p) => (p.id === 'chefsgiff' ? { ...p, cols: p.cols.map((c) => (/^[ABC]$/.test(c.id) && c.mil ? { ...c, mil: false } : c)) } : p)) }
 }
+function migrateMil3(d) {
+  if (!d?.plannings || d.milFix3) return d
+  return { ...d, milFix3: true, plannings: d.plannings.map((p) => ({ ...p, cols: (p.cols || []).map((c) => (c.mil && !(p.id === 'chefsgiff' && /^M\d/.test(c.id)) ? { ...c, mil: false } : c)) })) }
+}
 function migrateAddable(d) {
   if (!d?.blocks || d.addableFixed) return d
   return { ...d, addableFixed: true, blocks: d.blocks.map((b) => (b.id === 'mip' || b.id === 'autres' ? { ...b, addable: false } : b)) }
@@ -222,7 +226,7 @@ function migrateSigarCcfs(d) {
 function migrate(d) {
   d = migrateSigarCcfs(d)
   d = migrateEngage(migrateAddable(d))
-  d = migrateMil2(migrateMil(d))
+  d = migrateMil3(migrateMil2(migrateMil(d)))
   d = migrateFdf(migrateCadre(d))
   d = migrateDuty(migrateTag(migrateHeadCis(migrateSigar(d))))
   if (!d || d.cdtTitle !== undefined || !d.blocks) return d
