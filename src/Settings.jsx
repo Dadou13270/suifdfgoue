@@ -136,6 +136,7 @@ function Blocs({ c, set }) {
             <button className="danger" onClick={() => confirm(`Supprimer « ${b.title} » ?`) && set({ blocks: del(c.blocks, i) })}>Supprimer le bloc</button>
           </div>
           <div className="line wrap">
+            <label className="chk"><input type="checkbox" checked={b.show !== false} onChange={(e) => setB(i, { show: e.target.checked })} /> Afficher sur la vue jour (sinon : bouton « + {b.title} »)</label>
             <label className="chk"><input type="checkbox" checked={b.head} onChange={(e) => setB(i, { head: e.target.checked })} /> Ligne d'intitulé (chef de groupe…)</label>
             <label className="chk"><input type="checkbox" checked={!!b.duty} onChange={(e) => setB(i, { duty: e.target.checked })} /> Astreinte / Caserné + lieu + horaires</label>
             <label className="chk"><input type="checkbox" checked={b.location} onChange={(e) => setB(i, { location: e.target.checked })} /> Emplacement + horaires</label>

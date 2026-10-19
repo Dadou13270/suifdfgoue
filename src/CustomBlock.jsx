@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { EngineCell, TextField, LocField, NotifyBar } from './Cell.jsx'
 import { cellKey, uid, listIdFor, guessFilter, effBlock, paxOf } from './util.js'
 import { useEngage } from './engage.js'
+import { BlockTools } from './BlockTools.jsx'
 
 export const newBlock = () => ({ id: uid(), title: 'Autre bloc', head: false, location: false, rows: [{ id: uid(), label: 'Ligne 1' }] })
 
@@ -19,6 +20,7 @@ export function BlockCard({ off, b, day, config, onPatch, compact, update, onDel
       <div className="bhead static">
         {edit ? <TextField className="headfield" value={b.title} onCommit={(t) => update({ title: t })} /> : <b>{b.title}{titleExtra}</b>}
         {!edit && paxOf(config, b, day) > 0 && <span className="pax">{paxOf(config, b, day)} PAX</span>}
+        <BlockTools b={b} day={day} onPatch={onPatch} config={config} />
         <button className={edit ? 'primary' : ''} onClick={() => setEdit(!edit)} aria-label="Configurer le bloc" title="Configurer le bloc">{edit ? 'OK' : '⚙'}</button>
       </div>
       {edit && (

@@ -318,6 +318,15 @@ select.hc-violet{background:#ede9fe;border-color:#8b5cf6;color:#4c1d95}
 .engage.aladin.done .eng{color:#7c3aed}.engage.aladin.done .engnote{border-color:#7c3aed}
 
 .aladn{color:#7c3aed;font-weight:600}
-.notifbar{gap:6px;flex-wrap:nowrap}.notifbar>*{min-width:0}.notifbar .engage:not(.done),.notifbar .notif:not(.done){flex:0 0 auto}.notifbar .engage.done{flex:1 1 100%}
+.notifbar{gap:6px;flex-wrap:wrap}.notifbar>*{min-width:0}.notifbar .engage:not(.done),.notifbar .notif:not(.done){flex:0 0 auto}.notifbar .engage.done{flex:1 1 100%}
 .notifbar button{padding:6px 9px;font-size:.88em;white-space:nowrap;min-height:34px}
 .notifbar:has(.engage.done){flex-wrap:wrap}
+
+.bheadrow{display:flex;align-items:center;gap:6px}.bheadrow .bhead{flex:1}
+.btools{display:inline-flex;gap:4px}.btools button{min-height:32px;padding:2px 8px}
+.laybar{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:6px 0}.laybar select{min-width:140px}
+.lay-item{border:2px dashed var(--line);border-radius:10px;padding:4px;background:color-mix(in srgb,var(--accent) 4%,transparent);cursor:grab;min-width:0}
+.lay-item.dragging{opacity:.4}.lay-ctl{display:flex;justify-content:space-between;align-items:center;gap:6px;padding:2px 2px 6px;font-size:.9em}
+.lay-ctl button{min-height:30px;padding:2px 8px}.lay-ghost{pointer-events:none;opacity:.75;max-height:140px;overflow:hidden}
+.lay-end,.lay-new{border:2px dashed var(--line);border-radius:10px;color:var(--muted);display:flex;align-items:center;justify-content:center;min-height:44px;font-size:.85em}
+.lay-new{margin:0 0 12px}.rowgrid .addline .addbtn{align-self:center}

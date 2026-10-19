@@ -68,6 +68,7 @@ service cloud.firestore {
     match /presence/{d} { allow read, write: if active(); }
     match /activity/{d} { allow read: if isRole(['superadmin','admin']); allow create, update: if has(); }
     match /releves/{d}  { allow read: if active(); allow write: if allowed('releves'); }
+    match /layouts/{d}  { allow read: if active(); allow write: if isRole(['superadmin','admin']); }
     match /cadres/{d}   { allow read: if active(); allow write: if allowed('cadres'); }
   }
 }

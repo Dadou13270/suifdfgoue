@@ -101,3 +101,6 @@ export const syncCadres = (cadresList, persList) => {
   if (add.length) changed = true
   return changed ? [...add, ...out] : null
 }
+
+// Groupe masqué par défaut (Paramètres › Blocs) : visible seulement si ajouté pour le jour
+export const isShown = (b, day) => b.show !== false || !!day?.shown?.[b.id]

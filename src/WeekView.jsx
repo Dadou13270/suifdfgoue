@@ -5,12 +5,19 @@ import { DayIndexProvider } from './engage.js'
 import { isAddable } from './ExtraRows.jsx'
 import HeadLine from './HeadLine.jsx'
 import CustomBlock, { ConfigBlock, AddBlockButton } from './CustomBlock.jsx'
-import { cellKey, fmtShort, fmtDMY, fmtDow, weekNum, iso, listIdFor, guessFilter, baseTitle, locText, blockName, effBlock, hdrClass, isOff, paxOf } from './util.js'
+import { BlockTools } from './BlockTools.jsx'
+import { useLayouts, LayoutBar, orderIds } from './Layouts.jsx'
+import { isShown, cellKey, fmtShort, fmtDMY, fmtDow, weekNum, iso, listIdFor, guessFilter, baseTitle, locText, blockName, effBlock, hdrClass, isOff, paxOf } from './util.js'
 
 export default function WeekView({ config, dates, days, onPatch, onOpen }) {
   const { fix } = useContext(Lookup)
   const today = iso(new Date())
-  const ordered = [...config.blocks.filter((b) => b.section === 'cdt'), ...config.blocks.filter((b) => b.section !== 'cdt')]
+  const lay = useLayouts()
+  const seq = orderIds(lay.active, config.blocks.map((b) => b.id))
+  const sorted = seq.map((id) => config.blocks.find((b) => b.id === id)).filter(Boolean)
+  const shownWeek = (b) => dates.some((d) => isShown(b, days[d]))
+  const hiddenWeek = sorted.filter((b) => !shownWeek(b))
+  const ordered = [...sorted.filter((b) => b.section === 'cdt' && shownWeek(b)), ...sorted.filter((b) => b.section !== 'cdt' && shownWeek(b))]
   const exportCsv = () => {
     const q = (s) => `"${String(s ?? '').replace(/"/g, '""')}"`
     const rows = [['Ligne', ...dates]]
@@ -41,7 +48,7 @@ export default function WeekView({ config, dates, days, onPatch, onOpen }) {
                 ) : <>
                 <tr className="brow"><th className="sticky" colSpan={1}>{baseTitle(b)}</th>
                   {dates.map((d) => (
-                    <td key={d} className={`${off(d, b)} paxcell`}>{paxOf(config, effBlock(b, days[d]), days[d]) > 0 && <span className="pax abs">{paxOf(config, effBlock(b, days[d]), days[d])} PAX</span>}{b.customName && <TextField className="headfield" value={days[d]?.names?.[b.id]} placeholder="Nom personnalisé" onCommit={(t) => onPatch(d, { names: { [b.id]: t } })} />}{b.head && (b.headCis ? <HeadLine compact b={b} day={days[d] || {}} config={config} fix={fix} onPatch={(p) => onPatch(d, p)} /> : <div className={days[d]?.headsAuto?.[b.id] ? 'auto' : ''}><TextField className="headfield" value={days[d]?.heads?.[b.id]} placeholder={b.headHint} fix={fix}
+                    <td key={d} className={`${off(d, b)} paxcell`}><BlockTools b={effBlock(b, days[d])} day={days[d] || {}} onPatch={(p) => onPatch(d, p)} config={config} />{paxOf(config, effBlock(b, days[d]), days[d]) > 0 && <span className="pax abs">{paxOf(config, effBlock(b, days[d]), days[d])} PAX</span>}{b.customName && <TextField className="headfield" value={days[d]?.names?.[b.id]} placeholder="Nom personnalisé" onCommit={(t) => onPatch(d, { names: { [b.id]: t } })} />}{b.head && (b.headCis ? <HeadLine compact b={b} day={days[d] || {}} config={config} fix={fix} onPatch={(p) => onPatch(d, p)} /> : <div className={days[d]?.headsAuto?.[b.id] ? 'auto' : ''}><TextField className="headfield" value={days[d]?.heads?.[b.id]} placeholder={b.headHint} fix={fix}
                       onCommit={(t) => onPatch(d, { heads: { [b.id]: t }, headsAuto: { [b.id]: false } })} /></div>)}</td>
                   ))}
                 </tr>
@@ -67,7 +74,7 @@ export default function WeekView({ config, dates, days, onPatch, onOpen }) {
                 </>}
               </React.Fragment>
             ))
-  const off = (d, b) => (isOff(config, days[d]?.header?.niveau, b.id) ? 'off' : '')
+  const off = (d, b) => (isOff(config, days[d]?.header?.niveau, b.id) || !isShown(b, days[d]) ? 'off' : '')
   const dateRow = (top) => <tr><th className="sticky" style={{ top }}>Semaine {weekNum(dates[0])}</th>{dates.map((d) => <th key={d} className={d === today ? 'todaycol' : ''} style={{ top }}><button className="link" onClick={() => onOpen(d)}>{fmtShort(d)}</button></th>)}</tr>
   const cdtList = ordered.filter((b) => b.section === 'cdt')
   const mainList = ordered.filter((b) => b.section !== 'cdt')
@@ -84,6 +91,8 @@ export default function WeekView({ config, dates, days, onPatch, onOpen }) {
         </div>
       </div>
       <div className="weekbar"><Legend legend={config.legend} /><button onClick={exportCsv}>⭳ CSV</button></div>
+      <LayoutBar lay={lay} />
+      {hiddenWeek.length > 0 && <div className="line wrap addline">{hiddenWeek.map((b) => <button key={b.id} className="addbtn" title="Ajouter ce groupe à tous les jours de la semaine" onClick={() => dates.forEach((d) => onPatch(d, { shown: { [b.id]: true } }))}>+ {b.title}{b.tag ? ` ${b.tag}` : ''}</button>)}</div>}
       <div className="tablewrap">
         <table className="week wv">
           <colgroup><col style={{ width: 'clamp(90px, 9vw, 150px)' }} />{dates.map((d) => <col key={d} />)}</colgroup>
