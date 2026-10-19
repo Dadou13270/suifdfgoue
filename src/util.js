@@ -73,18 +73,30 @@ export const paxOf = (config, b, day) => {
 // Blocs grisés selon le niveau de mobilisation choisi (Paramètres › Niveau de mobilisation)
 export const isOff = (config, niveau, blockId) => !!niveau && (config.mobil?.[niveau] || []).includes(blockId)
 
-// Reporte grade et prénom de la fiche Personnel vers les cadres déjà présents (le Personnel fait foi)
+// Cadres = reflet du Personnel : noms absents du Personnel retirés, personnes avec FDF ajoutées, grade/prénom reportés
 export const syncCadres = (cadresList, persList) => {
   const nn = (x) => String(x || '').trim().toUpperCase()
-  const m = new Map((persList || []).filter((p) => p.nom).map((p) => [nn(p.nom), p]))
+  const P = (persList || []).filter((p) => p.nom)
+  if (!P.length) return null
+  const purge = P.some((p) => p.fdf)   // retrait des noms absents seulement une fois le Personnel géré (FDF renseignés)
+  const m = new Map(P.map((p) => [nn(p.nom), p]))
+  const cur = cadresList || []
   let changed = false
-  const out = (cadresList || []).map((c) => {
-    const p = m.get(nn(c.nom)); if (!p) return c
+  const out = []
+  const seen = new Set()
+  cur.forEach((c) => {
+    const k = nn(c.nom), p = m.get(k)
+    if (seen.has(k) || (!p && purge)) { changed = true; return }
+    if (!p) { seen.add(k); out.push(c); return }
+    seen.add(k)
     const n = { ...c }
     if (p.grade && p.grade !== c.grade) n.grade = p.grade
     if (p.prenom && p.prenom !== c.prenom) n.prenom = p.prenom
-    if (n.grade !== c.grade || n.prenom !== c.prenom) { changed = true; return n }
-    return c
+    if (n.grade !== c.grade || n.prenom !== c.prenom) changed = true
+    out.push(n)
   })
-  return changed ? out : null
+  const add = P.filter((p) => p.fdf && !seen.has(nn(p.nom)) && (seen.add(nn(p.nom)), true))
+    .map((p) => ({ id: uid(), grade: p.grade || '', nom: nn(p.nom), prenom: p.prenom || '', dispos: 0, giff: '', mil: false, fonct: '', cdg: '', aff: '', just: '' }))
+  if (add.length) changed = true
+  return changed ? [...add, ...out] : null
 }
