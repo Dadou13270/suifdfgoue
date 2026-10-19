@@ -207,8 +207,17 @@ function migrateAddable(d) {
   if (!d?.blocks || d.addableFixed) return d
   return { ...d, addableFixed: true, blocks: d.blocks.map((b) => (b.id === 'mip' || b.id === 'autres' ? { ...b, addable: false } : b)) }
 }
+function migrateEngage(d) {
+  if (!d?.statuses || d.statuses.some((s) => s.id === 'engage')) return d
+  return { ...d, statuses: [...d.statuses, { id: 'engage', label: 'Engagé', color: '#b91c1c', avail: false }] }
+}
+function migrateSigarCcfs(d) {
+  if (!d?.blocks) return d
+  return { ...d, blocks: d.blocks.map((b) => (/^sigar/.test(b.id) ? { ...b, rows: b.rows.map((r) => (r.filter === undefined ? { ...r, filter: 'CCFS6' } : r)) } : b)) }
+}
 function migrate(d) {
-  d = migrateAddable(d)
+  d = migrateSigarCcfs(d)
+  d = migrateEngage(migrateAddable(d))
   d = migrateMil(d)
   d = migrateFdf(migrateCadre(d))
   d = migrateDuty(migrateTag(migrateHeadCis(migrateSigar(d))))

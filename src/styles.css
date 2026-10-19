@@ -236,3 +236,35 @@ select.hc-blue{background:#dbeafe;border-color:#2563eb;color:#1e3a8a}
 select.hc-yellow{background:#fef9c3;border-color:#ca8a04;color:#713f12}
 select.hc-violet{background:#ede9fe;border-color:#8b5cf6;color:#4c1d95}
 @media (prefers-color-scheme:dark){:root:not([data-theme=light]) select.hc-green{background:#14532d;color:#dcfce7}:root:not([data-theme=light]) select.hc-blue{background:#1e3a8a;color:#dbeafe}:root:not([data-theme=light]) select.hc-yellow{background:#713f12;color:#fef9c3}:root:not([data-theme=light]) select.hc-violet{background:#4c1d95;color:#ede9fe}}
+
+.card.block.off{opacity:.5;filter:grayscale(1);background:color-mix(in srgb,var(--muted) 14%,var(--card))}
+.week td.off{opacity:.5;filter:grayscale(1);background:color-mix(in srgb,var(--muted) 18%,var(--card))}
+.mobtable td.chk,.mobtable th.chk{text-align:center;min-width:54px}
+
+.notifbar{display:flex;flex-wrap:wrap;gap:6px 12px;align-items:flex-start;margin-top:6px}
+.notifbar .notif{margin-top:0}
+.engage{display:flex;flex-direction:column;gap:4px;min-width:0;flex:1 1 160px}
+.engage.done .eng{color:#b91c1c;font-weight:700;font-size:.9em}
+.engage.done .engnote{border-color:#b91c1c}
+
+.card.engaged{border-color:#b91c1c;background:color-mix(in srgb,#b91c1c 7%,var(--card));margin-bottom:12px}
+.enggroup{margin-top:8px}
+.engchips{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}
+.engchip{border-color:#b91c1c;color:#b91c1c;font-weight:600}
+
+.pax{margin-left:auto;margin-right:8px;font-size:.85em;font-weight:700;padding:1px 8px;border-radius:999px;background:color-mix(in srgb,var(--accent) 14%,var(--card));color:var(--accent);white-space:nowrap;align-self:center}
+.week td.paxcell{position:relative}
+.pax.abs{position:absolute;top:2px;right:4px;margin:0;z-index:1;font-size:.72em}
+
+.ecell{position:relative}
+.ecell.dupe input{border-color:#dc2626;background:color-mix(in srgb,#dc2626 12%,var(--card))}
+.dupwarn{position:absolute;left:0;top:100%;z-index:6;background:#dc2626;color:#fff;font-size:.78em;padding:2px 8px;border-radius:6px;white-space:nowrap}
+
+.addfleet{position:absolute;right:30px;top:-9px;z-index:5;font-size:.7em;padding:0 6px;min-height:18px;border-color:#2563eb;color:#2563eb;background:var(--card)}
+
+.ecell{flex-wrap:wrap}
+.ecell .dlwrap{flex:1 1 0;min-width:0}
+.ecell .cmt{min-height:0;padding:0 4px;border:0;background:none;opacity:.35;font-size:.9em;line-height:1}
+.ecell .cmt.has,.ecell .cmt:hover{opacity:1}
+.ecell .enote{flex:0 0 100%;font-size:.75em;color:var(--muted);line-height:1.25;padding:0 4px 2px;cursor:pointer;white-space:pre-wrap}
+.ecell .enote-in{flex:0 0 100%;font-size:.8em;min-height:28px;padding:2px 6px}

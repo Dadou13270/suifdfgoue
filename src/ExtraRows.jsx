@@ -15,7 +15,7 @@ export default function ExtraRows({ b, day, config, onPatch, compact }) {
       {list.map((r) => (
         <div className="row extra" key={r.id}>
           <TextField value={r.label} placeholder="Intitulé" onCommit={(t) => ren(r, t)} />
-          <EngineCell compact={compact} cell={day.cells?.[cellKey(b.id, r.id)]} legend={config.legend}
+          <EngineCell ckey={cellKey(b.id, r.id)} compact={compact} cell={day.cells?.[cellKey(b.id, r.id)]} legend={config.legend}
             onChange={(c) => onPatch({ cells: { [cellKey(b.id, r.id)]: c } })} />
           <button className="danger" aria-label="Retirer la ligne" onClick={() => rm(r)}>✕</button>
         </div>

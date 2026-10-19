@@ -166,7 +166,7 @@ export default function App() {
           {info && <span className="small">{info}</span>}
         </div>
       )}
-      <Lookup.Provider value={{ fix, fleet: fleetDoc?.engins || [], statuses: config.statuses }}>
+      <Lookup.Provider value={{ fix, fleet: fleetDoc?.engins || [], statuses: config.statuses, date }}>
       <main ref={mainRef}>
         {!canTab(role, tab) ? null : tab === 'plannings' ? <Plannings config={config} date={date} role={role} />
         : tab === 'engins' ? <Engins config={config} />

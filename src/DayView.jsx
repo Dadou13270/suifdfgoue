@@ -1,6 +1,7 @@
 import React, { useContext, useState } from 'react'
-import { EngineCell, TextField, Lookup, LocField, DutyField, NotifyField } from './Cell.jsx'
-import { cellKey, listIdFor, guessFilter, blockName, hdrClass } from './util.js'
+import { EngineCell, TextField, Lookup, LocField, DutyField, NotifyBar } from './Cell.jsx'
+import { cellKey, listIdFor, guessFilter, blockName, hdrClass, isOff, effBlock, paxOf } from './util.js'
+import { useEngage, DayIndexProvider } from './engage.js'
 import { isAddable } from './ExtraRows.jsx'
 import HeadLine from './HeadLine.jsx'
 import CustomBlock, { ConfigBlock, AddBlockButton } from './CustomBlock.jsx'
@@ -18,11 +19,13 @@ export function Legend({ legend }) {
 function Block({ b, config, day, onPatch }) {
   const { fix } = useContext(Lookup)
   const [open, setOpen] = useState(true)
+  const engage = useEngage()
+  const pax = paxOf(config, effBlock(b, day), day)
   const head = day.heads?.[b.id]
   return (
-    <section className="card block">
+    <section className={`card block${isOff(config, day.header?.niveau, b.id) ? ' off' : ''}`}>
       <button className="bhead" onClick={() => setOpen(!open)}>
-        <b>{blockName(b, day)}</b><span className="chev">{open ? '▾' : '▸'}</span>
+        <b>{blockName(b, day)}</b>{pax > 0 && <span className="pax">{pax} PAX</span>}<span className="chev">{open ? '▾' : '▸'}</span>
       </button>
       {open && (
         <div className="bbody">
@@ -33,7 +36,7 @@ function Block({ b, config, day, onPatch }) {
           {b.rows.map((r) => (
             <div className="row" key={r.id}>
               <label>{r.label}</label>
-              <EngineCell cis={day.headCis?.[b.id]} filter={guessFilter(r)} listId={listIdFor(r)} cell={day.cells?.[cellKey(b.id, r.id)]} legend={config.legend}
+              <EngineCell ckey={cellKey(b.id, r.id)} cis={day.headCis?.[b.id]} filter={guessFilter(r)} listId={listIdFor(r)} cell={day.cells?.[cellKey(b.id, r.id)]} legend={config.legend}
                 onChange={(c) => onPatch({ cells: { [cellKey(b.id, r.id)]: c }, ...(day.notif?.[b.id] && (c?.text || '') !== (day.cells?.[cellKey(b.id, r.id)]?.text || '') ? { notif: { [b.id]: null } } : {}) })} />
             </div>
           ))}
@@ -49,7 +52,7 @@ function Block({ b, config, day, onPatch }) {
               <LocField value={day.locs?.[b.id]} lists={config.lists} onChange={(v) => onPatch({ locs: { [b.id]: v } })} />
             </div>
           )}
-          {b.rows.length > 0 && <NotifyField label={b.section === 'cdt' ? 'Cadres informés' : 'CIS informés'} value={day.notif?.[b.id]} onChange={(v) => onPatch({ notif: { [b.id]: v } })} />}
+          {b.rows.length > 0 && <NotifyBar label={b.section === 'cdt' ? 'Cadres informés' : 'CIS informés'} notif={day.notif?.[b.id]} onNotif={(v) => onPatch({ notif: { [b.id]: v } })} engaged={day.engaged?.[b.id]} onEngaged={(v) => { engage(effBlock(b, day), day, v); onPatch({ engaged: { [b.id]: v } }) }} />}
         </div>
       )}
     </section>
@@ -58,7 +61,7 @@ function Block({ b, config, day, onPatch }) {
 
 export default function DayView({ config, day, onPatch }) {
   return (
-    <>
+    <DayIndexProvider cells={day.cells}>
       <section className="card headcard">
         {config.header.map((h) => (
           <div className="hf" key={h.id}>
@@ -74,14 +77,14 @@ export default function DayView({ config, day, onPatch }) {
       {config.blocks.some((b) => b.section === 'cdt') && (
         <>
           <h3 className="sectitle">{config.cdtTitle || 'Chaîne de commandement'}</h3>
-          <div className="grid rowgrid" style={{ '--n': 4 }}>{config.blocks.filter((b) => b.section === 'cdt').map((b) => isAddable(b) ? <ConfigBlock key={b.id} b={b} config={config} day={day} onPatch={onPatch} /> : <Block key={b.id} b={b} config={config} day={day} onPatch={onPatch} />)}</div>
+          <div className="grid rowgrid" style={{ '--n': 4 }}>{config.blocks.filter((b) => b.section === 'cdt').map((b) => isAddable(b) ? <ConfigBlock key={b.id} off={isOff(config, day.header?.niveau, b.id)} b={b} config={config} day={day} onPatch={onPatch} /> : <Block key={b.id} b={b} config={config} day={day} onPatch={onPatch} />)}</div>
           <h3 className="sectitle">Dispositif</h3>
         </>
       )}
       {(() => {
         const grp = (b) => (/^giff/.test(b.id) ? 0 : /^(mil|sigar)/.test(b.id) ? 1 : ['mip', 'dih', 'spec'].includes(b.id) ? 2 : 3)
         const rows = [[], [], [], []]
-        config.blocks.filter((b) => b.section !== 'cdt').forEach((b) => rows[grp(b)].push(isAddable(b) ? <ConfigBlock key={b.id} b={b} config={config} day={day} onPatch={onPatch} /> : <Block key={b.id} b={b} config={config} day={day} onPatch={onPatch} />))
+        config.blocks.filter((b) => b.section !== 'cdt').forEach((b) => rows[grp(b)].push(isAddable(b) ? <ConfigBlock key={b.id} off={isOff(config, day.header?.niveau, b.id)} b={b} config={config} day={day} onPatch={onPatch} /> : <Block key={b.id} b={b} config={config} day={day} onPatch={onPatch} />))
         ;(day.customBlocks || []).forEach((b) => rows[3].push(<CustomBlock key={b.id} b={b} config={config} day={day} onPatch={onPatch} />))
         rows[3].push(<div className="line addline" key="__add"><AddBlockButton day={day} onPatch={onPatch} /><span className="muted small">Bloc propre à ce jour. Pour un bloc permanent : Paramètres › Blocs.</span></div>)
         return rows.filter((r) => r.length).map((r, i) => <div className="grid rowgrid" style={{ '--n': 4 }} key={i}>{r}</div>)
@@ -91,6 +94,6 @@ export default function DayView({ config, day, onPatch }) {
         <textarea className="comment" defaultValue={day.comment || ''} key={day.comment}
           onBlur={(e) => e.target.value !== (day.comment || '') && onPatch({ comment: e.target.value })} />
       </section>
-    </>
+    </DayIndexProvider>
   )
 }
