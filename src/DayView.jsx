@@ -120,7 +120,7 @@ export default function DayView({ config, day, onPatch, role }) {
           </div>
         ))}
       </section>
-      <LayoutBar lay={lay} editable={role === 'superadmin' || role === 'admin'} edit={edit} onEdit={startEdit} onCancel={() => setEdit(false)} onSave={(l, cb) => { cb(reconcile(draft, allIds)); setEdit(false) }} />
+      <LayoutBar lay={lay} editable={role === 'superadmin' || role === 'admin'} edit={edit} onEdit={startEdit} onCancel={() => setEdit(false)} onSave={(l, cb) => cb(reconcile(draft, allIds))} />
       <Legend legend={config.legend} />
       {rows.map((r, i) => (
         <React.Fragment key={i}>

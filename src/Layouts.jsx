@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useDoc, writeDoc } from './store.js'
 import { uid } from './util.js'
 
@@ -46,31 +46,41 @@ export const step = (rows, id, dir) => {
   return clean(ri === rows.length - 1 ? (row.length > 1 ? [...rest, [id]] : rows) : rest.map((x, i) => (i === ri + 1 ? [id, ...x] : x)))
 }
 
-// Barre de choix de la disposition (et édition en vue jour)
+// Barre de choix de la disposition (et édition en vue jour) — sans boîtes de dialogue du navigateur
 export function LayoutBar({ lay, editable, edit, onEdit, onSave, onCancel }) {
   const { list, active, activeId, setActive, save } = lay
+  const [name, setName] = useState('')
+  const [msg, setMsg] = useState('')
+  const [askDel, setAskDel] = useState(false)
+  useEffect(() => { setName(''); setMsg(''); setAskDel(false) }, [edit]) // eslint-disable-line
+  const run = async (fn, ok) => { try { await fn(); setMsg(ok) } catch (e) { setMsg(`Échec de l'enregistrement : ${e?.code || e?.message || e}`) } }
   const saveAs = () => {
-    const name = (window.prompt('Nom de la disposition', active?.name || '') || '').trim(); if (!name) return
-    const l = { id: uid(), name }; onSave(l, (rows) => { save([...list, { ...l, rows }]); setActive(l.id) })
+    const n = name.trim(); if (!n) { setMsg('Saisissez un nom pour la nouvelle disposition.'); return }
+    if (list.some((x) => x.name.toLowerCase() === n.toLowerCase())) { setMsg('Ce nom existe déjà.'); return }
+    const l = { id: uid(), name: n }
+    onSave(l, (rows) => run(async () => { await save([...list, { ...l, rows }]); setActive(l.id) }, `Disposition « ${n} » enregistrée.`))
   }
-  const overwrite = () => onSave(active, (rows) => save(list.map((x) => (x.id === active.id ? { ...x, rows } : x))))
-  const del = () => { if (window.confirm(`Supprimer la disposition « ${active.name} » ?`)) { save(list.filter((x) => x.id !== active.id)); setActive('') } }
+  const overwrite = () => onSave(active, (rows) => run(() => save(list.map((x) => (x.id === active.id ? { ...x, rows } : x))), `Disposition « ${active.name} » mise à jour.`))
+  const del = () => run(async () => { await save(list.filter((x) => x.id !== active.id)); setActive(''); setAskDel(false) }, 'Disposition supprimée.')
   return (
     <div className="laybar">
       <label>Disposition&nbsp;
-        <select value={activeId} disabled={edit} onChange={(e) => setActive(e.target.value)}>
+        <select value={activeId} disabled={edit} onChange={(e) => { setActive(e.target.value); setMsg('') }}>
           <option value="">Par défaut</option>
           {list.map((l) => <option key={l.id} value={l.id}>{l.name}</option>)}
         </select>
       </label>
       {editable && !edit && <button onClick={onEdit}>✎ Modifier la disposition</button>}
-      {editable && !edit && active && <button className="danger" onClick={del}>Supprimer</button>}
-      {edit && <>
-        <span className="muted small">Glissez les groupes ou utilisez les flèches.</span>
+      {editable && !edit && active && !askDel && <button className="danger" onClick={() => setAskDel(true)}>Supprimer</button>}
+      {editable && !edit && active && askDel && <><span className="small">Supprimer « {active.name} » ?</span><button className="danger" onClick={del}>Oui, supprimer</button><button onClick={() => setAskDel(false)}>Non</button></>}
+      {edit && <div className="laybar-edit">
+        <span className="muted small">Glissez les groupes ou utilisez les flèches, puis enregistrez.</span>
         {active && <button className="primary" onClick={overwrite}>Enregistrer « {active.name} »</button>}
-        <button className={active ? '' : 'primary'} onClick={saveAs}>Enregistrer sous…</button>
-        <button onClick={onCancel}>Terminer sans enregistrer</button>
-      </>}
+        <input className="layname" placeholder="Nom de la nouvelle disposition" value={name} onChange={(e) => setName(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && saveAs()} />
+        <button className={active ? '' : 'primary'} onClick={saveAs}>Enregistrer sous ce nom</button>
+        <button onClick={onCancel}>Terminer</button>
+      </div>}
+      {msg && <span className="small laymsg">{msg}</span>}
     </div>
   )
 }
