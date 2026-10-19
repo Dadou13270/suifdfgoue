@@ -1,6 +1,6 @@
 import { createContext, createElement, useContext, useMemo } from 'react'
 import { Lookup } from './Cell.jsx'
-import { writeDoc } from './store.js'
+import { writeDoc, useDoc } from './store.js'
 import { cellKey, blockName } from './util.js'
 
 export const ENG = 'engage'
@@ -92,3 +92,13 @@ export function useEngage() {
 }
 
 export const releaseOne = (fleet, id, statuses) => fleet.map((e) => (e.id === id ? { ...strip(e), status: freeStatus(e, statuses) } : e))
+
+// Engins cités dans le dispositif du jour (hors engins déjà engagés) : indisponibles tant qu'ils y figurent
+export function usePlaced(fleet, date) {
+  const [day] = useDoc(`days/${date}`)
+  return useMemo(() => {
+    const labs = new Set()
+    Object.values(day?.cells || {}).forEach((c) => labelsIn(fleet, c?.text).forEach((l) => labs.add(l)))
+    return new Set(fleet.filter((e) => e.status !== ENG && labs.has(labelOf(e))).map((e) => e.id))
+  }, [day, fleet])
+}

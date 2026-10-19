@@ -178,11 +178,11 @@ export default function App() {
       <Lookup.Provider value={{ fix, fleet: fleetDoc?.engins || [], statuses: config.statuses, date }}>
       <main ref={mainRef}>
         {!canTab(role, tab) ? null : tab === 'plannings' ? <Plannings config={config} date={date} role={role} />
-        : tab === 'engins' ? <Engins config={config} />
+        : tab === 'engins' ? <Engins config={config} date={date} />
         : tab === 'calendrier' ? <Calendrier config={config} date={date} onApply={(d) => patch(date, d)} />
         : tab === 'carto' ? <Carto config={config} date={date} day={days[date] || {}} />
         : tab === 'cadres' ? <Cadres config={config} />
-        : tab === 'releves' ? <Releves config={config} />
+        : tab === 'releves' ? <Releves config={config} date={date} />
         : view === 'day' ? (
           <>
             <h2 className="daytitle">{fmtLong(date)}</h2>

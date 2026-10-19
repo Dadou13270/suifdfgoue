@@ -313,3 +313,5 @@ select.hc-violet{background:#ede9fe;border-color:#8b5cf6;color:#4c1d95}
 .wrapnav{flex-wrap:wrap!important;overflow:visible!important}
 .stack>button,.stack>.filebtn,.stack>.ydb-imp>.filebtn{display:block;box-sizing:border-box;width:100%;text-align:center;font:inherit;font-size:1em;line-height:1.3;padding:10px 12px;border:1px solid var(--line);border-radius:8px;background:var(--card)}
 .stack>button.danger{color:#c0262d}
+
+.englist li.placed .ecode,.englist li.placed .cis{opacity:.5;text-decoration:line-through}.status.placedb{background:#fef3c7;color:#92400e;border-color:#f59e0b;cursor:default;--st:#d97706}

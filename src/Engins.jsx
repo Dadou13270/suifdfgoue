@@ -2,11 +2,12 @@ import React, { useEffect, useMemo, useState } from 'react'
 import { useDoc } from './store.js'
 import { TextField } from './Cell.jsx'
 import { uid } from './util.js'
-import { ENG, releaseOne } from './engage.js'
+import { ENG, releaseOne, usePlaced } from './engage.js'
 
-export default function Engins({ config }) {
+export default function Engins({ config, date }) {
   const [doc, patch] = useDoc('fleet/main')
   const [q, setQ] = useState('')
+  const [onlyFree, setOnlyFree] = useState(false)
   const [cis, setCis] = useState('')
   const [edit, setEdit] = useState(false)
   const [add, setAdd] = useState({ cat: '', code: '', cis: '' })
@@ -35,6 +36,8 @@ export default function Engins({ config }) {
     setMsg(`${e.code} ${e.cis} ajouté (${e.cat}).`)
     setAdd({ ...add, code: '' })
   }
+  const placed = usePlaced(eng, date)
+  const usable = shown.filter((e) => e.status !== ENG && !placed.has(e.id) && stOf(e.status).avail).length
   const engaged = shown.filter((e) => e.status === ENG)
   const groups = [...new Set(engaged.map((e) => e.eng?.group || 'Engagés'))]
   const count = (id) => shown.filter((e) => e.status === id).length
@@ -44,9 +47,12 @@ export default function Engins({ config }) {
       <div className="subbar">
         <div className="stats">
           {sts.map((s) => <span key={s.id} className="pill" style={{ '--st': s.color }}><i />{s.label} <b>{count(s.id)}</b></span>)}
+          <span className="pill" style={{ '--st': '#d97706' }}><i />Prévus au dispositif <b>{shown.filter((e) => placed.has(e.id)).length}</b></span>
+          <span className="pill" style={{ '--st': '#16a34a' }}><i />Utilisables <b>{usable}</b></span>
           <span className="muted">/ {shown.length}</span>
         </div>
         <div className="actions">
+          <button className={onlyFree ? 'primary' : ''} onClick={() => setOnlyFree(!onlyFree)}>Utilisables seulement</button>
           <input className="short" placeholder="Rechercher…" value={q} onChange={(e) => setQ(e.target.value)} />
           <select className="short" value={cis} onChange={(e) => setCis(e.target.value)}><option value="">Tous les CIS</option>{cisList.map((c) => <option key={c}>{c}</option>)}</select>
           <button className={adding ? 'primary' : ''} onClick={() => { setAdding(!adding); setMsg('') }}>+ Engin</button>
@@ -89,7 +95,7 @@ export default function Engins({ config }) {
       )}
       <div className="grid cats">
         {cats.map((cat) => {
-          const list = shown.filter((e) => e.cat === cat && e.status !== ENG)
+          const list = shown.filter((e) => e.cat === cat && e.status !== ENG && !(onlyFree && (placed.has(e.id) || !stOf(e.status).avail)))
           if (!list.length) return null
           return (
             <section className="card" key={cat}>
@@ -98,13 +104,15 @@ export default function Engins({ config }) {
                 {list.map((e) => {
                   const s = stOf(e.status)
                   return (
-                    <li key={e.id}>
+                    <li key={e.id} className={placed.has(e.id) ? 'placed' : ''}>
                       {edit ? <TextField value={`${e.code}`} onCommit={(t) => save(eng.map((x) => (x.id === e.id ? { ...x, code: t } : x)))} />
                         : <span className="ecode">{e.code}</span>}
                       {edit
                         ? <TextField className="cisf" value={e.cis} onCommit={(t) => save(eng.map((x) => (x.id === e.id ? { ...x, cis: t.toUpperCase() } : x)))} />
                         : <span className="cis">{e.cis}</span>}
-                      <button className="status" style={{ '--st': s.color }} onClick={() => cycle(e)}>{s.label}</button>
+                      {placed.has(e.id)
+                        ? <button className="status" style={{ '--st': '#d97706' }} title={`Cité dans le dispositif du jour (statut : ${s.label})`} onClick={() => cycle(e)}>Prévu</button>
+                        : <button className="status" style={{ '--st': s.color }} onClick={() => cycle(e)}>{s.label}</button>}
                       {edit && <button className="danger" aria-label="Supprimer" onClick={() => save(eng.filter((x) => x.id !== e.id))}>✕</button>}
                     </li>
                   )
