@@ -8,11 +8,12 @@ const getActive = () => { try { return localStorage.getItem(KEY) || '' } catch {
 // Dispositions enregistrées (partagées) ; la disposition active est propre à chaque appareil
 export function useLayouts() {
   const [doc] = useDoc('layouts/main')
-  const list = doc?.list || []
+  // Firestore refuse les tableaux imbriqués : chaque ligne est stockée sous la forme { ids: [...] }
+  const list = (doc?.list || []).map((l) => ({ ...l, rows: (l.rows || []).map((r) => (Array.isArray(r) ? r : r.ids || [])) }))
   const [id, setId] = useState(getActive())
   const setActive = (v) => { setId(v); try { localStorage.setItem(KEY, v) } catch {} }
   const active = list.find((l) => l.id === id) || null
-  const save = (next) => writeDoc('layouts/main', { list: next }, false)
+  const save = (next) => writeDoc('layouts/main', { list: next.map((l) => ({ id: l.id, name: l.name, rows: (l.rows || []).map((ids) => ({ ids })) })) }, false)
   return { list, active, activeId: active ? active.id : '', setActive, save }
 }
 
