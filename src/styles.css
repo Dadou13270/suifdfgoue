@@ -273,3 +273,22 @@ select.hc-violet{background:#ede9fe;border-color:#8b5cf6;color:#4c1d95}
 
 .brand .logo{height:34px;width:auto;display:block;margin-right:4px}
 @media(max-width:640px){.brand .logo{height:26px}}
+
+/* Relèves */
+.rel-grid{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:14px;align-items:start}
+@media(max-width:800px){.rel-grid{grid-template-columns:1fr}}
+.rel-group{margin-bottom:10px}
+.rel-head{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;align-items:baseline}
+.rel-note{margin:4px 0;padding:4px 8px;background:#fef2f2;border-radius:6px}
+.rel-eng{display:flex;align-items:center;gap:8px;padding:6px 0;border-top:1px solid var(--line,#e5e7eb)}
+.rel-eng.on{background:#fef9c3}
+.rel-eng button{margin-left:auto}
+.rel-hist{margin-top:6px;padding-top:6px;border-top:1px dashed var(--line,#e5e7eb)}
+.relbar{display:flex;flex-direction:column;gap:6px;padding:8px;background:#fef9c3;border:1px solid #facc15;border-radius:8px;margin-bottom:8px}
+.rel-filter{display:flex;gap:8px;margin-bottom:8px}
+.rel-filter input{flex:1;min-width:0}
+.rel-free{display:flex;flex-direction:column;gap:4px;max-height:70vh;overflow:auto}
+.rel-pick{display:flex;align-items:center;gap:8px;text-align:left;width:100%}
+.rel-pick.on{outline:2px solid #16a34a;background:#dcfce7}
+.rel-pick .pill{margin-left:auto;padding:1px 8px;border-radius:10px;border:1px solid var(--st);font-size:12px}
+.rel-filter input,.rel-filter select{flex:1 1 45%;width:auto;min-width:0}

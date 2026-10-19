@@ -63,11 +63,11 @@ export function DayIndexProvider({ cells, children }) {
   return createElement(DayIndex.Provider, { value: idx }, children)
 }
 
-const freeStatus = (e, statuses) => {
+export const freeStatus = (e, statuses) => {
   const ok = (id) => statuses.find((s) => s.id === id)?.avail
   return e.prev && e.prev !== ENG && ok(e.prev) ? e.prev : (statuses.find((s) => s.avail)?.id || statuses[0]?.id)
 }
-const strip = ({ eng, prev, ...e }) => e
+export const strip = ({ eng, prev, ...e }) => e
 
 export function useEngage() {
   const { fleet = [], statuses = [], date } = useContext(Lookup)

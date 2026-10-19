@@ -11,14 +11,14 @@ export const ASSIGNABLE = ['superadmin', 'admin', 'chefcolonne', 'ogg', 'pending
 
 export const TAB_LABELS = {
   dispositif: 'Dispositif (jour, semaine)', plannings: 'Plannings', engins: 'Engins', calendrier: 'Calendrier',
-  carto: 'Carto CIS', cadres: 'Cadres', settings: 'Paramètres', users: 'Rôles des utilisateurs',
+  carto: 'Carto CIS', cadres: 'Cadres', releves: 'Relèves', settings: 'Paramètres', users: 'Rôles des utilisateurs',
 }
-const ALL = ['dispositif', 'plannings', 'engins', 'calendrier', 'carto', 'cadres']
+const ALL = ['dispositif', 'plannings', 'engins', 'calendrier', 'carto', 'cadres', 'releves']
 export const FUNC_TABS = ALL
 export const DEFAULT_ACCESS = {
   superadmin: [...ALL, 'settings', 'users'],
   admin: [...ALL, 'settings', 'users'],
-  chefcolonne: ['dispositif', 'plannings', 'engins', 'carto', 'cadres'],
+  chefcolonne: ['dispositif', 'plannings', 'engins', 'carto', 'cadres', 'releves'],
   ogg: ['dispositif', 'engins', 'carto'],
   pending: [],
   refused: [],

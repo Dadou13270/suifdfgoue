@@ -2,7 +2,7 @@ import React from 'react'
 import Presence from './Presence.jsx'
 export const TABS = [
   ['dispositif', 'Dispositif', '▦'], ['plannings', 'Plannings', '☰'], ['engins', 'Engins', '◫'],
-  ['calendrier', 'Calendrier', '◷'], ['carto', 'Carto CIS', '◎'], ['cadres', 'Cadres', '☺'],
+  ['calendrier', 'Calendrier', '◷'], ['carto', 'Carto CIS', '◎'], ['cadres', 'Cadres', '☺'], ['releves', 'Relèves', '↻'],
 ]
 export default function Nav({ tab, setTab, allowed, user, role }) {
   return (

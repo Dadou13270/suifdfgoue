@@ -18,6 +18,7 @@ import Engins from './Engins.jsx'
 import Calendrier from './Calendrier.jsx'
 import Carto from './Carto.jsx'
 import Cadres from './Cadres.jsx'
+import Releves from './Releves.jsx'
 import { captureToPdf, sharePdf } from './exportPdf.js'
 
 // Listes déroulantes : chaque ligne ne propose que les engins de son type (VLTT, CCFM…)
@@ -178,6 +179,7 @@ export default function App() {
         : tab === 'calendrier' ? <Calendrier config={config} date={date} onApply={(d) => patch(date, d)} />
         : tab === 'carto' ? <Carto config={config} date={date} day={days[date] || {}} />
         : tab === 'cadres' ? <Cadres config={config} />
+        : tab === 'releves' ? <Releves config={config} />
         : view === 'day' ? (
           <>
             <h2 className="daytitle">{fmtLong(date)}</h2>

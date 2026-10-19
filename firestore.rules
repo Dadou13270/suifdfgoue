@@ -40,8 +40,8 @@ service cloud.firestore {
     function rightsPath() { return /databases/$(database)/documents/config/rights; }
     function defaults(r) {
       return {
-        'admin': ['dispositif','plannings','engins','calendrier','carto','cadres','settings','users'],
-        'chefcolonne': ['dispositif','plannings','engins','carto','cadres'],
+        'admin': ['dispositif','plannings','engins','calendrier','carto','cadres','releves','settings','users'],
+        'chefcolonne': ['dispositif','plannings','engins','carto','cadres','releves'],
         'ogg': ['dispositif','engins','carto']
       }.get(r, []);
     }
@@ -65,6 +65,7 @@ service cloud.firestore {
     match /personnel/{d} { allow read: if active(); allow write: if isRole(['superadmin','admin']); }
     match /presence/{d} { allow read, write: if active(); }
     match /activity/{d} { allow read: if isRole(['superadmin','admin']); allow create, update: if has(); }
+    match /releves/{d}  { allow read: if active(); allow write: if allowed('releves'); }
     match /cadres/{d}   { allow read: if active(); allow write: if allowed('cadres'); }
   }
 }
