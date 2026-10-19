@@ -49,26 +49,3 @@ export const hdrClass = (id, v) => {
   if (id === 'gdc') return 'hc-violet'
   return ''
 }
-
-// Effectif (PAX) d'un bloc : somme, sur les lignes remplies, de l'équipage de l'engin (type lu dans le code saisi,
-// sinon dans le libellé de la ligne). Chaîne de commandement : 1 personne par ligne remplie (2 quand le module est complet). Les lignes d'un bloc SIGAR comptent l'effectif SIGAR.
-import { DEFAULT_CONFIG } from './defaults.js'
-export const paxOf = (config, b, day) => {
-  const crew = (config.crew || DEFAULT_CONFIG.crew).map((c) => ({ key: String(c.key || '').toUpperCase(), pax: Number(c.pax) || 0 })).filter((c) => c.key)
-    .sort((a, z) => z.key.length - a.key.length)
-  const sig = config.sigarPax ?? DEFAULT_CONFIG.sigarPax
-  const typeOf = (t) => crew.find((c) => t === c.key || t.startsWith(c.key + '-') || t.startsWith(c.key + ' '))
-  let n = 0
-  ;(b.rows || []).forEach((r) => {
-    const t = String(day?.cells?.[cellKey(b.id, r.id)]?.text || '').trim().toUpperCase()
-    if (!t) return
-    if (b.section === 'cdt') { n += Number(config.cdtPax ?? DEFAULT_CONFIG.cdtPax) || 0; return }
-    if (/^sigar/i.test(b.id)) { n += Number(sig) || 0; return }
-    const c = typeOf(t) || crew.find((x) => String(r.label || '').toUpperCase().startsWith(x.key))
-    if (c) n += c.pax
-  })
-  return n
-}
-
-// Blocs grisés selon le niveau de mobilisation choisi (Paramètres › Niveau de mobilisation)
-export const isOff = (config, niveau, blockId) => !!niveau && (config.mobil?.[niveau] || []).includes(blockId)

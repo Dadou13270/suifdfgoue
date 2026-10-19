@@ -1,6 +1,5 @@
 import { createPortal } from 'react-dom'
-import { getActor, writeDoc } from './store.js'
-import { DayIndex, labelOf, labelsIn } from './engage.js'
+import { getActor } from './store.js'
 import React, { createContext, useContext, useEffect, useId, useState } from 'react'
 
 export const Lookup = createContext({ fix: (t) => t })
@@ -57,64 +56,31 @@ export function TextField({ value, onCommit, placeholder, list, className = '', 
 }
 
 // Cellule engin / personne : texte complété automatiquement + pastille de statut
-export function EngineCell({ cell = {}, legend, onChange, compact, listId = 'eng-list', cis, filter, ckey }) {
+export function EngineCell({ cell = {}, legend, onChange, compact, listId = 'eng-list', cis, filter }) {
   const { fix, fleet = [], statuses = [] } = useContext(Lookup)
-  const idx = useContext(DayIndex)
   const [foc, setFoc] = useState(false)
-  const [warn, setWarn] = useState('')
-  const [rev, setRev] = useState(0)
-  const [ednote, setEdnote] = useState(false)
-  const [nv, setNv] = useState('')
   const uid = 'dlc' + useId().replace(/\W/g, '')
-  const own = filter !== '@names'
-  const taken = own && idx && ckey ? idx.takenFor(ckey) : new Set()
-  const dup = own && idx && ckey ? idx.dupOf(ckey) : false
+  const prio = cis && filter !== '@names'
   let opts = []
-  if (own && foc) {
+  if (prio && foc) {
     const ok = (e) => statuses.find((s) => s.id === e.status)?.avail !== false
     const f = (filter || '').toUpperCase() + (/\d$/.test(filter || '') ? '-' : '')
-    const all = fleet.filter((e) => ok(e) && !taken.has(labelOf(e)) && (!filter || e.code.toUpperCase().startsWith(f)))
-    opts = cis ? [...all.filter((e) => e.cis === cis), ...all.filter((e) => e.cis !== cis)] : all
+    const all = fleet.filter((e) => ok(e) && (!filter || e.code.toUpperCase().startsWith(f)))
+    opts = [...all.filter((e) => e.cis === cis), ...all.filter((e) => e.cis !== cis)]
   }
-  const idxl = legend.findIndex((l) => l.id === cell.status)
-  const cur = legend[idxl]
+  const idx = legend.findIndex((l) => l.id === cell.status)
+  const cur = legend[idx]
   const next = () => {
-    const n = idxl + 1 >= legend.length ? -1 : idxl + 1
+    const n = idx + 1 >= legend.length ? -1 : idx + 1
     onChange({ status: n === -1 ? '' : legend[n].id })
   }
-  const parsed = (() => {
-    const m = /^([A-Z]+\d*[A-Z]*)-(\d+[A-Z]?)\s+([A-Z]{2,5})$/i.exec(String(cell.text || '').trim())
-    if (!m || !own || !fleet.length) return null
-    const code = `${m[1]}-${m[2]}`.toUpperCase(); const cis = m[3].toUpperCase()
-    if (fleet.some((e) => labelOf(e) === `${code} ${cis}`)) return null
-    const pref = m[1].toUpperCase()
-    const cat = fleet.find((e) => String(e.code).toUpperCase().startsWith(pref + '-'))?.cat || pref
-    return { code, cis, cat }
-  })()
-  const addToFleet = () => {
-    if (!parsed) return
-    const status = statuses.find((s) => s.avail)?.id || statuses[0]?.id
-    writeDoc('fleet/main', { engins: [...fleet, { id: Math.random().toString(36).slice(2, 10), ...parsed, status }] }, true)
-  }
-  const commit = (t) => {
-    const clash = own && taken.size ? [...labelsIn(fleet, t)].find((l) => taken.has(l)) : null
-    if (clash) { setWarn(`${clash} est déjà pris ce jour`); setTimeout(() => setWarn(''), 4000); setRev((r) => r + 1); return }
-    setWarn('')
-    onChange({ text: t, auto: false })
-  }
   return (
-    <div className={`ecell ${compact ? 'compact' : ''} ${cell.auto ? 'auto' : ''} ${dup ? 'dupe' : ''}`} style={cur ? { '--st': cur.color } : undefined} data-st={cur ? 1 : 0} title={dup ? 'Engin déjà utilisé ailleurs ce jour' : undefined}>
+    <div className={`ecell ${compact ? 'compact' : ''} ${cell.auto ? 'auto' : ''}`} style={cur ? { '--st': cur.color } : undefined} data-st={cur ? 1 : 0}>
       <span className="dlwrap" onPointerEnter={() => setFoc(true)} onFocus={() => setFoc(true)}>
-        <TextField key={rev} value={cell.text} fix={fix} list={own ? uid : listId} onCommit={commit} />
-        {own && foc && <datalist id={uid}>{opts.map((e) => <option key={e.id} value={`${e.code} ${e.cis}`.trim()} />)}</datalist>}
+        <TextField value={cell.text} fix={fix} list={prio ? uid : listId} onCommit={(t) => onChange({ text: t, auto: false })} />
+        {prio && foc && <datalist id={uid}>{opts.map((e) => <option key={e.id} value={`${e.code} ${e.cis}`.trim()} />)}</datalist>}
       </span>
-      {!compact && <button className={`cmt ${cell.note ? 'has' : ''}`} onClick={() => { setNv(cell.note || ''); setEdnote(!ednote) }} title={cell.note ? 'Modifier le commentaire' : 'Ajouter un commentaire'} aria-label="Commentaire sur l'engin">💬</button>}
       <button className="dot" onClick={next} title={cur ? cur.label : 'Statut'} aria-label="Changer le statut" />
-      {!compact && ednote && <input className="enote-in" autoFocus placeholder="Commentaire…" value={nv} onChange={(e) => setNv(e.target.value)}
-        onKeyDown={(e) => e.key === 'Enter' && e.currentTarget.blur()} onBlur={() => { setEdnote(false); if (nv.trim() !== (cell.note || '')) onChange({ note: nv.trim() }) }} />}
-      {!compact && !ednote && cell.note && <div className="enote" onClick={() => { setNv(cell.note); setEdnote(true) }}>{cell.note}</div>}
-      {warn && <span className="dupwarn" role="alert">{warn}</span>}
-      {parsed && !warn && <button className="addfleet" onClick={addToFleet} title={`Ajouter ${parsed.code} ${parsed.cis} au parc (${parsed.cat})`}>＋ parc</button>}
     </div>
   )
 }
@@ -151,36 +117,6 @@ export function NotifyField({ value, onChange, compact, label = 'CIS informés' 
         ? <><span className="ok" title={v.by ? `par ${v.by}` : ''}>✔ {label} · {fmt(v.at)}{v.by ? ` · ${v.by}` : ''}</span>
             <button className="link" onClick={() => onChange(null)} aria-label="Annuler la notification">✕</button></>
         : <button onClick={() => onChange({ at: Date.now(), by: who })}>🔔 {label}</button>}
-    </div>
-  )
-}
-
-function stamp() { const a = getActor(); return { at: Date.now(), by: a.name || (a.email || '').split('@')[0] } }
-
-export function EngageField({ value, onChange, compact }) {
-  const v = value && value.at ? value : null
-  const [note, setNote] = useState(v?.note || '')
-  useEffect(() => setNote(v?.note || ''), [v?.note])
-  const fmt = (t) => new Date(t).toLocaleString('fr-FR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })
-  return (
-    <div className={`engage ${v ? 'done' : ''} ${compact ? 'compact' : ''}`}>
-      <div className="notif">
-        {v
-          ? <><span className="eng" title={v.by ? `par ${v.by}` : ''}>🔥 Engagé · {fmt(v.at)}{v.by ? ` · ${v.by}` : ''}</span>
-              <button className="link" onClick={() => onChange(null)} aria-label="Annuler l'engagement">✕</button></>
-          : <button onClick={() => onChange(stamp())}>🔥 Engagé</button>}
-      </div>
-      {v && <input className="engnote" aria-label="Commentaire sur l'engagement" placeholder="Commentaire (lieu du feu, mission…)" value={note}
-        onChange={(e) => setNote(e.target.value)} onBlur={() => note !== (v.note || '') && onChange({ ...v, note })} />}
-    </div>
-  )
-}
-
-export function NotifyBar({ notif, engaged, onNotif, onEngaged, label, compact }) {
-  return (
-    <div className="notifbar">
-      <NotifyField label={label} compact={compact} value={notif} onChange={onNotif} />
-      <EngageField compact={compact} value={engaged} onChange={onEngaged} />
     </div>
   )
 }

@@ -1,6 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { useDoc } from './store.js'
-import { DEFAULT_CONFIG } from './defaults.js'
 import { TextField } from './Cell.jsx'
 import { addDays, iso } from './util.js'
 
@@ -41,7 +40,6 @@ export default function Plannings({ config, date, role }) {
     const pick = (f) => [...new Set(P.filter(f).map((p) => p.nom))].sort()
     const tries = [() => pick((p) => (!c.cadre || p.cadreEmploi === c.cadre) && (!c.fdf || p.fdf === c.fdf)), () => (c.cadre ? pick((p) => p.cadreEmploi === c.cadre) : []), () => (c.fdf ? pick((p) => p.fdf === c.fdf) : [])]
     if (c.mil) { const l = [...new Set((cadres?.list || []).filter((x) => x.mil && x.nom).map((x) => x.nom))].sort(); if (l.length) return l }
-    if (!c.mil && !c.fdf && c.cadre === 'Chef de groupe') { const gr = (config.fdfGrades || DEFAULT_CONFIG.fdfGrades).FDF3 || []; const pf = new Map(P.map((p) => [String(p.nom).trim().toUpperCase(), p.fdf])); const l = [...new Set((cadres?.list || []).filter((x) => { const f = pf.get(String(x.nom || '').trim().toUpperCase()); return f ? f === 'FDF3' : gr.includes(x.grade) }).map((x) => x.nom).filter(Boolean))].sort(); return l }
     if (!c.cadre && !c.fdf && !c.mil) return names
     for (const t of tries) { const l = t(); if (l.length) return l }
     return names

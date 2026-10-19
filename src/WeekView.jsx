@@ -1,11 +1,10 @@
 import React, { useContext } from 'react'
 import { EngineCell, TextField, Lookup, LocField, DutyField } from './Cell.jsx'
 import { Legend } from './DayView.jsx'
-import { DayIndexProvider } from './engage.js'
 import { isAddable } from './ExtraRows.jsx'
 import HeadLine from './HeadLine.jsx'
 import CustomBlock, { ConfigBlock, AddBlockButton } from './CustomBlock.jsx'
-import { cellKey, fmtShort, fmtDMY, fmtDow, weekNum, iso, listIdFor, guessFilter, baseTitle, locText, blockName, effBlock, hdrClass, isOff, paxOf } from './util.js'
+import { cellKey, fmtShort, fmtDMY, fmtDow, weekNum, iso, listIdFor, guessFilter, baseTitle, locText, blockName, effBlock, hdrClass } from './util.js'
 
 export default function WeekView({ config, dates, days, onPatch, onOpen }) {
   const { fix } = useContext(Lookup)
@@ -36,12 +35,12 @@ export default function WeekView({ config, dates, days, onPatch, onOpen }) {
                 )}
                 {isAddable(b) ? (
                   <tr><th className="sticky sub">{b.title}</th>
-                    {dates.map((d) => <td key={d} className={`customcell ${off(d, b)}`}><DayIndexProvider cells={days[d]?.cells}><ConfigBlock compact b={b} day={days[d] || {}} config={config} onPatch={(p) => onPatch(d, p)} /></DayIndexProvider></td>)}
+                    {dates.map((d) => <td key={d} className="customcell"><ConfigBlock compact b={b} day={days[d] || {}} config={config} onPatch={(p) => onPatch(d, p)} /></td>)}
                   </tr>
                 ) : <>
                 <tr className="brow"><th className="sticky" colSpan={1}>{baseTitle(b)}</th>
                   {dates.map((d) => (
-                    <td key={d} className={`${off(d, b)} paxcell`}>{paxOf(config, effBlock(b, days[d]), days[d]) > 0 && <span className="pax abs">{paxOf(config, effBlock(b, days[d]), days[d])} PAX</span>}{b.customName && <TextField className="headfield" value={days[d]?.names?.[b.id]} placeholder="Nom personnalisé" onCommit={(t) => onPatch(d, { names: { [b.id]: t } })} />}{b.head && (b.headCis ? <HeadLine compact b={b} day={days[d] || {}} config={config} fix={fix} onPatch={(p) => onPatch(d, p)} /> : <div className={days[d]?.headsAuto?.[b.id] ? 'auto' : ''}><TextField className="headfield" value={days[d]?.heads?.[b.id]} placeholder={b.headHint} fix={fix}
+                    <td key={d}>{b.customName && <TextField className="headfield" value={days[d]?.names?.[b.id]} placeholder="Nom personnalisé" onCommit={(t) => onPatch(d, { names: { [b.id]: t } })} />}{b.head && (b.headCis ? <HeadLine compact b={b} day={days[d] || {}} config={config} fix={fix} onPatch={(p) => onPatch(d, p)} /> : <div className={days[d]?.headsAuto?.[b.id] ? 'auto' : ''}><TextField className="headfield" value={days[d]?.heads?.[b.id]} placeholder={b.headHint} fix={fix}
                       onCommit={(t) => onPatch(d, { heads: { [b.id]: t }, headsAuto: { [b.id]: false } })} /></div>)}</td>
                   ))}
                 </tr>
@@ -49,25 +48,24 @@ export default function WeekView({ config, dates, days, onPatch, onOpen }) {
                   <tr key={r.id}>
                     <th className="sticky sub">{r.label}</th>
                     {dates.map((d) => (
-                      <td key={d} className={off(d, b)}><DayIndexProvider cells={days[d]?.cells}><EngineCell ckey={cellKey(b.id, r.id)} compact cis={days[d]?.headCis?.[b.id]} filter={guessFilter(r)} listId={listIdFor(r)} cell={days[d]?.cells?.[cellKey(b.id, r.id)]} legend={config.legend}
-                        onChange={(c) => onPatch(d, { cells: { [cellKey(b.id, r.id)]: c } })} /></DayIndexProvider></td>
+                      <td key={d}><EngineCell compact cis={days[d]?.headCis?.[b.id]} filter={guessFilter(r)} listId={listIdFor(r)} cell={days[d]?.cells?.[cellKey(b.id, r.id)]} legend={config.legend}
+                        onChange={(c) => onPatch(d, { cells: { [cellKey(b.id, r.id)]: c } })} /></td>
                     ))}
                   </tr>
                 ))}
                 {b.duty && (
                   <tr><th className="sticky sub">🕒 Astreinte / Caserné</th>
-                    {dates.map((d) => <td key={d} className={off(d, b)}><DutyField compact value={days[d]?.duty?.[b.id]} lists={config.lists} onChange={(v) => onPatch(d, { duty: { [b.id]: v } })} /></td>)}
+                    {dates.map((d) => <td key={d}><DutyField compact value={days[d]?.duty?.[b.id]} lists={config.lists} onChange={(v) => onPatch(d, { duty: { [b.id]: v } })} /></td>)}
                   </tr>
                 )}
                 {b.location && (
                   <tr><th className="sticky sub">📍 Emplacement et horaires</th>
-                    {dates.map((d) => <td key={d} className={off(d, b)}><LocField compact value={days[d]?.locs?.[b.id]} lists={config.lists} onChange={(v) => onPatch(d, { locs: { [b.id]: v } })} /></td>)}
+                    {dates.map((d) => <td key={d}><LocField compact value={days[d]?.locs?.[b.id]} lists={config.lists} onChange={(v) => onPatch(d, { locs: { [b.id]: v } })} /></td>)}
                   </tr>
                 )}
                 </>}
               </React.Fragment>
             ))
-  const off = (d, b) => (isOff(config, days[d]?.header?.niveau, b.id) ? 'off' : '')
   const dateRow = (top) => <tr><th className="sticky" style={{ top }}>Semaine {weekNum(dates[0])}</th>{dates.map((d) => <th key={d} className={d === today ? 'todaycol' : ''} style={{ top }}><button className="link" onClick={() => onOpen(d)}>{fmtShort(d)}</button></th>)}</tr>
   const cdtList = ordered.filter((b) => b.section === 'cdt')
   const mainList = ordered.filter((b) => b.section !== 'cdt')
@@ -122,10 +120,10 @@ export default function WeekView({ config, dates, days, onPatch, onOpen }) {
             <tr>
               <th className="sticky sub">Autres blocs du jour</th>
               {dates.map((d) => (
-                <td key={d} className="customcell"><DayIndexProvider cells={days[d]?.cells}>
+                <td key={d} className="customcell">
                   {(days[d]?.customBlocks || []).map((b) => <CustomBlock key={b.id} compact b={b} day={days[d] || {}} config={config} onPatch={(p) => onPatch(d, p)} />)}
                   <AddBlockButton compact day={days[d] || {}} onPatch={(p) => onPatch(d, p)} />
-                </DayIndexProvider></td>
+                </td>
               ))}
             </tr>
           </tbody>
