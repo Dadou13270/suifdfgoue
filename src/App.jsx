@@ -83,7 +83,7 @@ export default function App() {
     } catch (e) { setPdfMsg(String(e?.message).includes('pdf-indisponible') ? "Export PDF : disponible dans l'application déployée (non inclus dans cette version d'essai)." : 'Échec de la création du PDF.') }
     setPdfBusy(false)
   }
-  const doFill = (ow) => { const n = run(dates, ow); setInfo(n ? `${n} champ(s) complété(s) automatiquement.` : 'Rien à compléter : plannings et calendrier déjà reportés.') }
+  const doFill = (ow) => { const n = run(dates, ow); setInfo(n ? `${n} champ(s) importé(s).` : 'Rien à importer : plannings et calendrier déjà reportés.') }
 
   useEffect(() => {
     if (!config) return
@@ -164,10 +164,9 @@ export default function App() {
       <Datalists config={config} fleet={fleetDoc?.engins || []} cadres={cadresDoc?.list || []} pers={persDoc?.list || []} />
       {tab === 'dispositif' && (
         <div className="autobar">
-          <span className="muted small">Chefs de GIFF, groupes de commandement et engins du calendrier se reportent seuls.</span>
+          <span className="muted small">Remplissage automatique à l'ouverture. Si le planning change, cliquez sur Importer le planning.</span>
           <div className="actions">
-            <button onClick={() => doFill(false)}>Compléter les champs vides</button>
-            <button onClick={() => doFill(true)}>Tout réappliquer</button>
+            <button onClick={() => doFill(true)} title="Importe dans la journée les chefs de GIFF, groupes de commandement et engins du calendrier">Importer le planning</button>
           </div>
           {info && <span className="small">{info}</span>}
         </div>
