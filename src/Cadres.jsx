@@ -34,6 +34,13 @@ export default function Cadres({ config }) {
   const [lt, setLt] = useState('')
   const initial = (c) => (String(c.nom || '').trim().normalize('NFD').replace(/[̀-ͯ]/g, '').charAt(0).toUpperCase() || '#').replace(/[^A-Z]/, '#')
   const list = doc?.list || []
+  // Toute personne du Personnel dotée d'un FDF (3, 4 ou 5) rejoint automatiquement la liste des cadres
+  const toAdd = doc ? (pers?.list || []).filter((p) => p.nom && p.fdf && !have.has(N(p.nom))) : []
+  const toAddKey = toAdd.map((p) => N(p.nom)).join('|')
+  useEffect(() => {
+    if (!toAdd.length) return
+    patch({ list: [...toAdd.map((p) => ({ id: uid(), grade: p.grade || '', nom: N(p.nom), prenom: p.prenom || '', dispos: 0, giff: '', mil: false, fonct: '', cdg: '', aff: '', just: '' })), ...list] })
+  }, [toAddKey]) // eslint-disable-line
   const set = (id, p) => patch({ list: list.map((c) => (c.id === id ? { ...c, ...p } : c)) })
   const shown = list.filter((c) => (!lt || initial(c) === lt) && (!g || c.giff === g) && (!fd || fdfOf(c) === fd) && (!ml || (ml === 'oui' ? !!c.mil : !c.mil)) && (!q || `${c.nom} ${c.prenom}`.toLowerCase().includes(q.toLowerCase())))
     .sort((a, b) => String(a.nom || '').localeCompare(String(b.nom || ''), 'fr') || String(a.prenom || '').localeCompare(String(b.prenom || ''), 'fr'))
