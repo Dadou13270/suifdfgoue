@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { MODE, useAuth, useConfig, useDays, useDoc, setActor } from './store.js'
+import { DEFAULT_CONFIG } from './defaults.js'
 import { Lookup } from './Cell.jsx'
 import { makeFix } from './autofill.js'
 import useAutoFill from './useAutoFill.js'
@@ -19,7 +20,8 @@ import Cadres from './Cadres.jsx'
 import { captureToPdf, sharePdf } from './exportPdf.js'
 
 // Listes déroulantes : chaque ligne ne propose que les engins de son type (VLTT, CCFM…)
-function Datalists({ config, fleet, cadres }) {
+function Datalists({ config, fleet, cadres, pers }) {
+  const cdg = useMemo(() => { const gr = (config.fdfGrades || DEFAULT_CONFIG.fdfGrades).FDF3 || []; const pf = new Map(pers.map((p) => [String(p.nom).trim().toUpperCase(), p.fdf])); const l = [...new Set(cadres.filter((c) => { const f = pf.get(String(c.nom || '').trim().toUpperCase()); return f ? f === 'FDF3' : gr.includes(c.grade) }).map((c) => c.nom).filter(Boolean))].sort(); return l.length ? l : [...new Set(cadres.map((c) => c.nom))].sort() }, [cadres, pers, config])
   const filters = useMemo(() => [...new Set(config.blocks.flatMap((b) => b.rows.map(guessFilter)).filter((f) => f && f !== '@names'))], [config])
   const ok = (e) => config.statuses.find((s) => s.id === e.status)?.avail !== false
   const lab = (e) => `${e.code} ${e.cis}`.trim()
@@ -32,6 +34,7 @@ function Datalists({ config, fleet, cadres }) {
         </datalist>
       ))}
       <datalist id="dl-mil">{(() => { const m = [...new Set(cadres.filter((c) => c.mil).map((c) => c.nom))].sort(); return (m.length ? m : [...new Set(cadres.map((c) => c.nom))].sort()).map((n) => <option key={n} value={n} />) })()}</datalist>
+      <datalist id="dl-cdg">{cdg.map((n) => <option key={n} value={n} />)}</datalist>
       <datalist id="dl-names">{[...new Set(cadres.map((c) => c.nom))].sort().map((n) => <option key={n} value={n} />)}</datalist>
       <datalist id="place-list">{(config.lists.emplacements || []).map((x) => <option key={x} value={x} />)}</datalist>
     </>
@@ -61,6 +64,7 @@ export default function App() {
 
   const [fleetDoc] = useDoc('fleet/main', ready)
   const [cadresDoc] = useDoc('cadres/main', ready)
+  const [persDoc] = useDoc('personnel/main', ready)
   const fix = useMemo(() => makeFix(fleetDoc?.engins || [], cadresDoc?.list || []), [fleetDoc, cadresDoc])
   const { run } = useAutoFill({ config: config || { autofill: {} }, dates, days, patch, ready: ready && !!config, cadres: cadresDoc, fleet: fleetDoc })
   const [info, setInfo] = useState('')
@@ -155,7 +159,7 @@ export default function App() {
       {pdfMsg && <div className="banner" onClick={() => setPdfMsg('')}>{pdfMsg} <span className="muted small">(toucher pour fermer)</span></div>}
       {!verified && <div className="banner">Adresse e-mail non confirmée. <button className="link" onClick={resendVerify}>Renvoyer l'e-mail</button> · <button className="link" onClick={refreshVerify}>J'ai confirmé</button></div>}
       <Nav tab={tab} setTab={setTab} allowed={allowed} user={user} role={role} />
-      <Datalists config={config} fleet={fleetDoc?.engins || []} cadres={cadresDoc?.list || []} />
+      <Datalists config={config} fleet={fleetDoc?.engins || []} cadres={cadresDoc?.list || []} pers={persDoc?.list || []} />
       {tab === 'dispositif' && (
         <div className="autobar">
           <span className="muted small">Chefs de GIFF, groupes de commandement et engins du calendrier se reportent seuls.</span>

@@ -12,7 +12,7 @@ export default function HeadLine({ b, day, config, onPatch, fix, compact }) {
         <option value="">{b.tag ? 'CIS engins' : 'CIS'}</option>{opts.map((o) => <option key={o}>{o}</option>)}
       </select>}
       {!b.tag && <span className="hp">:</span>}
-      <TextField className="headfield" value={day.heads?.[b.id]} fix={fix} list={/^mil/.test(b.id) ? 'dl-mil' : 'dl-names'} placeholder={b.headHint || 'Chef de groupe'}
+      <TextField className="headfield" value={day.heads?.[b.id]} fix={fix} list={/^mil/.test(b.id) ? 'dl-mil' : 'dl-cdg'} placeholder={b.headHint || 'Chef de groupe'}
         onCommit={(t) => onPatch({ heads: { [b.id]: t }, headsAuto: { [b.id]: false } })} />
     </div>
   )
