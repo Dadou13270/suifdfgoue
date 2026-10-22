@@ -11,7 +11,8 @@ import WeekView from './WeekView.jsx'
 import Settings from './Settings.jsx'
 import Login from './Login.jsx'
 import { usePersonnel } from './Personnel.jsx'
-import { ROLES, allowedTabs, canTab, setRights } from './roles.js'
+import { ROLES, allowedTabs, canTab, setRights, isReadOnly } from './roles.js'
+import ReadOnly from './ReadOnly.jsx'
 import Nav from './Nav.jsx'
 import Plannings from './Plannings.jsx'
 import Engins from './Engins.jsx'
@@ -105,6 +106,7 @@ export default function App() {
   }, [P.list, P.users, config]) // eslint-disable-line
   const waitingCount = ['superadmin', 'admin'].includes(role) ? P.users.filter((u) => (u.role || 'pending') === 'pending' && u.id !== user?.uid).length : 0
   const allowed = allowedTabs(role)
+  const W = (el) => (isReadOnly(role, tab) ? <ReadOnly key={tab}>{el}</ReadOnly> : el)
   useEffect(() => { if (role && allowed.length && !allowed.includes(tab)) setTab(allowed[0]) }, [role, tab, rightsDoc]) // eslint-disable-line
   if (user === undefined || (user && role === undefined)) return <div className="boot">Chargement…</div>
   if (!user) return <Login onLogin={login} onRegister={register} />
@@ -151,10 +153,10 @@ export default function App() {
           </div>}
           {MODE === 'local'
             ? <select className="short rolesel" aria-label="Rôle simulé (essai)" value={role} onChange={(e) => setLocalRole(e.target.value)} title="Essai : simuler un rôle">
-                {['superadmin', 'admin', 'chefcolonne', 'ogg'].map((r) => <option key={r} value={r}>{ROLES[r].label}</option>)}</select>
+                {['superadmin', 'admin', 'chefcolonne', 'ogg', 'cds'].map((r) => <option key={r} value={r}>{ROLES[r].label}</option>)}</select>
             : realRole === 'superadmin'
               ? <select className="short rolesel" aria-label="Voir l'application comme" value={viewAs || 'superadmin'} onChange={(e) => setViewAs(e.target.value === 'superadmin' ? '' : e.target.value)} title="Super administrateur : voir l'application avec les droits d'un autre rôle (affichage seulement)">
-                  {['superadmin', 'admin', 'chefcolonne', 'ogg'].map((r) => <option key={r} value={r}>{ROLES[r].label}</option>)}</select>
+                  {['superadmin', 'admin', 'chefcolonne', 'ogg', 'cds'].map((r) => <option key={r} value={r}>{ROLES[r].label}</option>)}</select>
               : <span className="chip rolechip">{ROLES[role]?.label}</span>}
           <button onClick={exportPdf} disabled={pdfBusy} aria-label="Copie d'écran PDF" title="Copie d'écran en PDF, à envoyer par e-mail">📄 <span className="hide-sm">{pdfBusy ? 'PDF…' : 'PDF / Mail'}</span></button>
           {canTab(role, 'settings') && <button onClick={() => setPage('settings')} aria-label="Paramètres">⚙ <span className="hide-sm">Paramètres</span>{waitingCount > 0 && <span className="chip">{waitingCount}</span>}</button>}
@@ -177,10 +179,10 @@ export default function App() {
       )}
       <Lookup.Provider value={{ fix, fleet: fleetDoc?.engins || [], statuses: config.statuses, date }}>
       <main ref={mainRef}>
-        {!canTab(role, tab) ? null : tab === 'plannings' ? <Plannings config={config} date={date} role={role} />
-        : tab === 'engins' ? <Engins config={config} date={date} />
-        : tab === 'calendrier' ? <Calendrier config={config} date={date} onApply={(d) => patch(date, d)} />
-        : tab === 'carto' ? <Carto config={config} date={date} day={days[date] || {}} />
+        {!canTab(role, tab) ? null : tab === 'plannings' ? W(<Plannings config={config} date={date} role={role} />)
+        : tab === 'engins' ? W(<Engins config={config} date={date} />)
+        : tab === 'calendrier' ? W(<Calendrier config={config} date={date} onApply={(d) => patch(date, d)} />)
+        : tab === 'carto' ? W(<Carto config={config} date={date} day={days[date] || {}} />)
         : tab === 'cadres' ? <Cadres config={config} />
         : tab === 'releves' ? <Releves config={config} date={date} />
         : view === 'day' ? (
@@ -189,7 +191,7 @@ export default function App() {
             <DayView config={config} role={role} day={days[date] || {}} onPatch={(d) => patch(date, d)} />
           </>
         ) : (
-          <WeekView config={config} dates={dates} days={days} onPatch={patch} onOpen={(d) => { setDate(d); setView('day') }} />
+          <WeekView role={role} config={config} dates={dates} days={days} onPatch={patch} onOpen={(d) => { setDate(d); setView('day') }} />
         )}
       </main>
       </Lookup.Provider>

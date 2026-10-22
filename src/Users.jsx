@@ -70,7 +70,7 @@ export default function Users({ role, selfId, config }) {
         <table className="week permtable">
           <thead><tr><th>Rôle</th>{Object.entries(TAB_LABELS).map(([k, l]) => <th key={k}>{l}</th>)}</tr></thead>
           <tbody>
-            {['superadmin', 'admin', 'chefcolonne', 'ogg'].map((r) => (
+            {['superadmin', 'admin', 'chefcolonne', 'ogg', 'cds'].map((r) => (
               <tr key={r}><th>{ROLES[r].label}</th>
                 {Object.keys(TAB_LABELS).map((t) => {
                   const on = access[r].includes(t)

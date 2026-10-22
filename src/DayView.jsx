@@ -2,6 +2,7 @@ import React, { useContext, useState } from 'react'
 import { EngineCell, TextField, Lookup, LocField, DutyField, NotifyBar } from './Cell.jsx'
 import { cellKey, listIdFor, guessFilter, blockName, hdrClass, isOff, effBlock, paxOf, isShown } from './util.js'
 import { BlockTools } from './BlockTools.jsx'
+import { canLayout } from './roles.js'
 import { useLayouts, LayoutBar, reconcile, moveBefore, moveToRowEnd, moveNewRow, step } from './Layouts.jsx'
 import { useEngage, DayIndexProvider } from './engage.js'
 import { isAddable } from './ExtraRows.jsx'
@@ -120,7 +121,7 @@ export default function DayView({ config, day, onPatch, role }) {
           </div>
         ))}
       </section>
-      <LayoutBar lay={lay} editable={role === 'superadmin' || role === 'admin'} edit={edit} onEdit={startEdit} onCancel={() => setEdit(false)} onSave={(l, cb) => cb(reconcile(draft, allIds))} />
+      {canLayout(role) && <LayoutBar lay={lay} editable edit={edit} onEdit={startEdit} onCancel={() => setEdit(false)} onSave={(l, cb) => cb(reconcile(draft, allIds))} />}
       <Legend legend={config.legend} />
       {rows.map((r, i) => (
         <React.Fragment key={i}>

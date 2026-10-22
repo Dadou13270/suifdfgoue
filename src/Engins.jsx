@@ -52,9 +52,9 @@ export default function Engins({ config, date }) {
           <span className="muted">/ {shown.length}</span>
         </div>
         <div className="actions">
-          <button className={onlyFree ? 'primary' : ''} onClick={() => setOnlyFree(!onlyFree)}>Utilisables seulement</button>
-          <input className="short" placeholder="Rechercher…" value={q} onChange={(e) => setQ(e.target.value)} />
-          <select className="short" value={cis} onChange={(e) => setCis(e.target.value)}><option value="">Tous les CIS</option>{cisList.map((c) => <option key={c}>{c}</option>)}</select>
+          <button data-ro-ok className={onlyFree ? 'primary' : ''} onClick={() => setOnlyFree(!onlyFree)}>Utilisables seulement</button>
+          <input data-ro-ok className="short" placeholder="Rechercher…" value={q} onChange={(e) => setQ(e.target.value)} />
+          <select data-ro-ok className="short" value={cis} onChange={(e) => setCis(e.target.value)}><option value="">Tous les CIS</option>{cisList.map((c) => <option key={c}>{c}</option>)}</select>
           <button className={adding ? 'primary' : ''} onClick={() => { setAdding(!adding); setMsg('') }}>+ Engin</button>
           <button className={edit ? 'primary' : ''} onClick={() => setEdit(!edit)}>{edit ? 'Terminer' : 'Modifier le parc'}</button>
         </div>

@@ -34,7 +34,7 @@ export default function Carto({ config, date, day }) {
       <div className="subbar">
         <div><b style={{ textTransform: 'capitalize' }}>{fmtLong(date)}</b>
           <span className="muted"> · {[h.validation, h.nmr, h.niveau && `niveau ${h.niveau}`].filter(Boolean).join(' · ')}</span></div>
-        <select className="short" value={cat} onChange={(e) => setCat(e.target.value)}><option value="">Toutes catégories</option>{cats.map((c) => <option key={c}>{c}</option>)}</select>
+        <select data-ro-ok className="short" value={cat} onChange={(e) => setCat(e.target.value)}><option value="">Toutes catégories</option>{cats.map((c) => <option key={c}>{c}</option>)}</select>
       </div>
       <div className="stats">
         <span className="pill" style={{ '--st': '#16a34a' }}><i />Disponibles <b>{tot('dispo')}</b></span>

@@ -7,9 +7,10 @@ import HeadLine from './HeadLine.jsx'
 import CustomBlock, { ConfigBlock, AddBlockButton } from './CustomBlock.jsx'
 import { BlockTools } from './BlockTools.jsx'
 import { useLayouts, LayoutBar, orderIds } from './Layouts.jsx'
+import { canLayout } from './roles.js'
 import { isShown, cellKey, fmtShort, fmtDMY, fmtDow, weekNum, iso, listIdFor, guessFilter, baseTitle, locText, blockName, effBlock, hdrClass, isOff, paxOf } from './util.js'
 
-export default function WeekView({ config, dates, days, onPatch, onOpen }) {
+export default function WeekView({ config, dates, days, onPatch, onOpen, role }) {
   const { fix } = useContext(Lookup)
   const today = iso(new Date())
   const lay = useLayouts()
@@ -91,7 +92,7 @@ export default function WeekView({ config, dates, days, onPatch, onOpen }) {
         </div>
       </div>
       <div className="weekbar"><Legend legend={config.legend} /><button onClick={exportCsv}>⭳ CSV</button></div>
-      <LayoutBar lay={lay} />
+      {canLayout(role) && <LayoutBar lay={lay} />}
       {hiddenWeek.length > 0 && <div className="line wrap addline">{hiddenWeek.map((b) => <button key={b.id} className="addbtn" title="Ajouter ce groupe à tous les jours de la semaine" onClick={() => dates.forEach((d) => onPatch(d, { shown: { [b.id]: true } }))}>+ {b.title}{b.tag ? ` ${b.tag}` : ''}</button>)}</div>}
       <div className="tablewrap">
         <table className="week wv">

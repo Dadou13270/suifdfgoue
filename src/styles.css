@@ -331,3 +331,5 @@ select.hc-violet{background:#ede9fe;border-color:#8b5cf6;color:#4c1d95}
 .lay-end,.lay-new{border:2px dashed var(--line);border-radius:10px;color:var(--muted);display:flex;align-items:center;justify-content:center;min-height:44px;font-size:.85em}
 .lay-new{margin:0 0 12px}.rowgrid .addline .addbtn{align-self:center}
 .laybar-edit{display:flex;flex-wrap:wrap;align-items:center;gap:8px;flex:1 1 100%}.layname{min-width:220px;flex:1 1 220px;max-width:340px}.laymsg{color:var(--accent);font-weight:600}
+
+.ro input:not([data-ro-ok]),.ro select:not([data-ro-ok]),.ro textarea{background:color-mix(in srgb,var(--muted) 10%,var(--card));cursor:default}

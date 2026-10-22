@@ -2,18 +2,16 @@ import React, { useEffect, useState } from 'react'
 import { useDoc, writeDoc } from './store.js'
 import { uid } from './util.js'
 
-const KEY = 'fdf-layout'
-const getActive = () => { try { return localStorage.getItem(KEY) || '' } catch { return '' } }
 
-// Dispositions enregistrées (partagées) ; la disposition active est propre à chaque appareil
+// Dispositions enregistrées et disposition active : partagées par tous (seuls superadmin / admin les choisissent)
 export function useLayouts() {
   const [doc] = useDoc('layouts/main')
   // Firestore refuse les tableaux imbriqués : chaque ligne est stockée sous la forme { ids: [...] }
   const list = (doc?.list || []).map((l) => ({ ...l, rows: (l.rows || []).map((r) => (Array.isArray(r) ? r : r.ids || [])) }))
-  const [id, setId] = useState(getActive())
-  const setActive = (v) => { setId(v); try { localStorage.setItem(KEY, v) } catch {} }
+  const id = doc?.activeId || ''
+  const setActive = (v) => writeDoc('layouts/main', { activeId: v }, true)
   const active = list.find((l) => l.id === id) || null
-  const save = (next) => writeDoc('layouts/main', { list: next.map((l) => ({ id: l.id, name: l.name, rows: (l.rows || []).map((ids) => ({ ids })) })) }, false)
+  const save = (next) => writeDoc('layouts/main', { list: next.map((l) => ({ id: l.id, name: l.name, rows: (l.rows || []).map((ids) => ({ ids })) })) }, true)
   return { list, active, activeId: active ? active.id : '', setActive, save }
 }
 

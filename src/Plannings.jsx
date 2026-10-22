@@ -74,11 +74,11 @@ export default function Plannings({ config, date, role }) {
   return (
     <div className="plan">
       <div className="subbar">
-        <div className="seg wrapseg">{pls.map((p) => <button key={p.id} className={p.id === pl.id ? 'on' : ''} onClick={() => setPid(p.id)}>{p.title}</button>)}</div>
+        <div className="seg wrapseg" data-ro-ok>{pls.map((p) => <button key={p.id} className={p.id === pl.id ? 'on' : ''} onClick={() => setPid(p.id)}>{p.title}</button>)}</div>
         <div className="datebar">
-          <button onClick={() => shift(-1)} aria-label="Mois précédent">‹</button>
+          <button data-ro-ok onClick={() => shift(-1)} aria-label="Mois précédent">‹</button>
           <b className="monthname">{MONTHS[m - 1]} {y}</b>
-          <button onClick={() => shift(1)} aria-label="Mois suivant">›</button>
+          <button data-ro-ok onClick={() => shift(1)} aria-label="Mois suivant">›</button>
           {canRaz && (razAsk
             ? <><span className="small">Effacer {pl.title} {MONTHS[m - 1]} {y} ?</span><button className="danger" onClick={raz}>Confirmer</button><button onClick={() => setRazAsk(false)}>Annuler</button></>
             : <button className="danger" onClick={() => setRazAsk(true)} title="Efface les données du planning affiché pour ce mois">RAZ</button>)}
@@ -116,7 +116,7 @@ export default function Plannings({ config, date, role }) {
           <p className="muted small">Sur toute la période du planning. Toucher un nom le surligne.</p>
           <ul>
             {totals.map(([nm, k]) => (
-              <li key={nm}><button className={`link ${hl === nm ? 'on' : ''}`} onClick={() => setHl(hl === nm ? '' : nm)}>{nm}</button><b>{k}</b></li>
+              <li key={nm}><button data-ro-ok className={`link ${hl === nm ? 'on' : ''}`} onClick={() => setHl(hl === nm ? '' : nm)}>{nm}</button><b>{k}</b></li>
             ))}
             {!totals.length && <li className="muted">Aucune affectation.</li>}
           </ul>
