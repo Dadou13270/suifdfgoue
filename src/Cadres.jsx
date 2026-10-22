@@ -7,9 +7,9 @@ import { DEFAULT_CONFIG } from './defaults.js'
 const COLS = [['grade', 'Grade', 70], ['nom', 'Nom', 130], ['prenom', 'Prénom', 110], ['dispos', 'Dispos', 70, 'num'], ['giff', 'GIFF', 90, 'giff'], ['mil', 'MIL', 50, 'mil'],
   ['fonct', 'Aff. fonctionnelle', 110], ['cdg', 'CDG terr.', 90], ['aff', 'Affectation', 90], ['just', 'Justification', 200]]
 
-export default function Cadres({ config }) {
+export default function Cadres({ config, role }) {
   const [doc, patch] = useDoc('cadres/main')
-  const [pers] = useDoc('personnel/main')
+  const [pers, ppatch] = useDoc('personnel/main')
   const [fd, setFd] = useState('')
   const [ml, setMl] = useState('')
   const fdfs = config?.lists?.fdf || ['FDF3', 'FDF4', 'FDF5']
@@ -40,6 +40,13 @@ export default function Cadres({ config }) {
   const upC = doc ? syncCadres(doc.list, pers?.list) : null
   const upKey = upC ? upC.map((x) => `${x.nom}|${x.grade}|${x.prenom}`).join(';') : ''
   useEffect(() => { if (upC) patch({ list: upC }) }, [upKey]) // eslint-disable-line
+  // Personnel géré : Cadres en est le reflet, une fiche créée ici serait aussitôt retirée -> on crée la personne dans le Personnel
+  const managed = !!pers?.list?.some((p) => p.nom && p.fdf)
+  const canPers = role === 'superadmin' || role === 'admin'
+  const addCadre = () => {
+    if (managed) { if (canPers) { ppatch({ list: [{ id: uid(), nom: 'NOUVEAU', prenom: '', grade: '', cadreEmploi: '', fdf: '', role: '', email: '' }, ...(pers.list || [])] }); setQ('NOUVEAU') } return }
+    patch({ list: [{ id: uid(), grade: '', nom: 'NOUVEAU', prenom: '', dispos: 0, giff: '', mil: false, fonct: '', cdg: '', aff: '', just: '' }, ...list] })
+  }
   const set = (id, p) => patch({ list: list.map((c) => (c.id === id ? { ...c, ...p } : c)) })
   const gradesAll = config?.lists?.grades || DEFAULT_CONFIG.lists.grades
   const affs = [...new Set(list.map((c) => String(c.aff || '').trim()).filter(Boolean))].sort((x, y) => x.localeCompare(y, 'fr'))
@@ -55,7 +62,7 @@ export default function Cadres({ config }) {
       <div className="subbar">
         <b>Cadres COD VLTT / CDG <span className="muted">{shown.length}/{list.length}</span></b>
         <div className="actions">
-          <button className="primary" onClick={() => patch({ list: [{ id: uid(), grade: '', nom: 'NOUVEAU', prenom: '', dispos: 0, giff: '', mil: false, fonct: '', cdg: '', aff: '', just: '' }, ...list] })}>+ Cadre</button>
+          <button className="primary" disabled={managed && !canPers} title={managed && !canPers ? 'Les cadres sont créés par un administrateur (Gestion du personnel)' : managed ? 'Crée la personne dans Gestion du personnel : elle apparaît ici automatiquement' : ''} onClick={addCadre}>+ Cadre</button>
         </div>
       </div>
       <div className="cadfilters">

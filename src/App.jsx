@@ -183,7 +183,7 @@ export default function App() {
         : tab === 'engins' ? W(<Engins config={config} date={date} />)
         : tab === 'calendrier' ? W(<Calendrier config={config} date={date} onApply={(d) => patch(date, d)} />)
         : tab === 'carto' ? W(<Carto config={config} date={date} day={days[date] || {}} />)
-        : tab === 'cadres' ? <Cadres config={config} />
+        : tab === 'cadres' ? <Cadres config={config} role={role} />
         : tab === 'releves' ? <Releves config={config} date={date} />
         : view === 'day' ? (
           <>
