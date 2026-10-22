@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from 'react'
 import { useDays, useDoc } from './store.js'
+import { agentsToPdf, downloadBlob } from './agentsPdf.js'
 import { addDays, iso, cellKey, effBlock, blockName, fmtShort } from './util.js'
 
 const MAX_DAYS = 400
@@ -150,7 +151,8 @@ export default function Stats({ config }) {
 
       {sub === 'agents' && <>
       <h3 className="cathead">Statistiques par agent <span className="muted">{agents.length}</span></h3>
-      <div className="actions stfilters"><input placeholder="Rechercher un agent…" value={qa} onChange={(e) => setQa(e.target.value)} /></div>
+      <div className="actions stfilters"><input placeholder="Rechercher un agent…" value={qa} onChange={(e) => setQa(e.target.value)} />
+        <button className="primary" disabled={!agents.length} onClick={() => { try { const list = agents.filter((a) => !qa || `${a.grade} ${a.nom}`.toLowerCase().includes(qa.toLowerCase())); downloadBlob(agentsToPdf(list, { from, to, cols }), `listing-agents_${from}_${to}.pdf`) } catch (e) { alert('PDF indisponible : ' + (e?.message || e)) } }}>Imprimer le listing (PDF)</button></div>
       {!agents.length ? <p className="muted">Aucun agent identifié sur la période (les noms doivent exister dans Cadres).</p> : (
         <div className="tablewrap"><table className="week">
           <thead><tr><th>Agent</th><th>Grade</th><th>Total</th><th>Jours</th>{cols.map((c) => <th key={c}>{c}</th>)}<th>Engagé</th></tr></thead>

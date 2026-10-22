@@ -113,10 +113,28 @@ export default function Personnel({ c, set, config, role, selfId, dirty }) {
       )}
       <h3>Personnel <span className="muted">{shown.length}{shown.length !== P.list.length ? `/${P.list.length}` : ''}</span></h3>
       <div className="line wrap small">
-        {fdfs.map((f) => <span className="chip" key={f}>{f} : {P.list.filter((p) => p.fdf === f).length}</span>)}
-        <span className="chip">Sans FDF : {P.list.filter((p) => !p.fdf).length}</span>
         <span className="chip">Comptes liés : {P.list.filter((p) => P.linkOf(p)).length}</span>
       </div>
+      {(() => {
+        const total = P.list.length
+        const byRole = [...ROLE_OPTS.filter(Boolean), 'pending'].map((r) => [r === 'pending' ? 'Aucun droit (en attente)' : ROLES[r].label, P.list.filter((p) => P.mapped(p) === r).length])
+        const known = new Set(cadresEmploi)
+        const ce = [...cadresEmploi, ...[...new Set(P.list.map((p) => p.cadreEmploi).filter((x) => x && !known.has(x)))]]
+        const byCe = [...ce.map((g) => [g, P.list.filter((p) => p.cadreEmploi === g).length]), ['Non renseigné', P.list.filter((p) => !p.cadreEmploi).length]]
+        const card = (t, rows) => (
+          <section className="card repcard">
+            <h4>{t} <span className="muted">{total}</span></h4>
+            {rows.map(([l, n]) => (
+              <div className="reprow" key={l}>
+                <span>{l}</span><b>{n}</b>
+                <i style={{ '--w': `${total ? Math.round((n / total) * 100) : 0}%` }} />
+              </div>
+            ))}
+          </section>
+        )
+        const byFdf = [...fdfs.map((f) => [f, P.list.filter((p) => p.fdf === f).length]), ['Sans FDF', P.list.filter((p) => !p.fdf).length]]
+        return <div className="repcards">{card('Répartition des FDF', byFdf)}{card('Répartition des rôles', byRole)}{card("Répartition des cadres d'emploi", byCe)}</div>
+      })()}
       <div className="subbar">
         <input className="short" placeholder="Rechercher…" value={q} onChange={(e) => setQ(e.target.value)} />
         <div className="actions">

@@ -333,3 +333,7 @@ select.hc-violet{background:#ede9fe;border-color:#8b5cf6;color:#4c1d95}
 .laybar-edit{display:flex;flex-wrap:wrap;align-items:center;gap:8px;flex:1 1 100%}.layname{min-width:220px;flex:1 1 220px;max-width:340px}.laymsg{color:var(--accent);font-weight:600}
 
 .ro input:not([data-ro-ok]),.ro select:not([data-ro-ok]),.ro textarea{background:color-mix(in srgb,var(--muted) 10%,var(--card));cursor:default}
+
+.repcards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:10px 0;align-items:start}@media(max-width:760px){.repcards{grid-template-columns:1fr}}
+.repcard h4{margin:0 0 8px;font-size:1em}.reprow{display:grid;grid-template-columns:1fr auto;gap:2px 8px;align-items:center;padding:3px 0;font-size:.92em}
+.reprow i{grid-column:1/-1;height:5px;border-radius:3px;background:linear-gradient(90deg,var(--accent) var(--w),color-mix(in srgb,var(--muted) 18%,transparent) var(--w))}
