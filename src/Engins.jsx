@@ -36,6 +36,10 @@ export default function Engins({ config, date }) {
     setMsg(`${e.code} ${e.cis} ajouté (${e.cat}).`)
     setAdd({ ...add, code: '' })
   }
+  const renameCat = (from, to) => {
+    const n = String(to || '').trim(); if (!n || n === from) return
+    patch({ engins: eng.map((e) => (e.cat === from ? { ...e, cat: n } : e)), cats: [...new Set(cats.map((c) => (c === from ? n : c)))] })
+  }
   const placed = usePlaced(eng, date)
   const usable = shown.filter((e) => e.status !== ENG && !placed.has(e.id) && stOf(e.status).avail).length
   const engaged = shown.filter((e) => e.status === ENG)
@@ -99,7 +103,7 @@ export default function Engins({ config, date }) {
           if (!list.length) return null
           return (
             <section className="card" key={cat}>
-              <h3 className="cathead">{cat} <span className="muted">{list.length}</span></h3>
+              <h3 className="cathead">{edit ? <TextField className="catname" value={cat} onCommit={(t) => renameCat(cat, t)} /> : cat} <span className="muted">{list.length}</span></h3>
               <ul className="englist">
                 {list.map((e) => {
                   const s = stOf(e.status)

@@ -378,3 +378,10 @@ input.crew-code:focus{background:color-mix(in srgb,var(--accent) 6%,var(--card))
 .autohelp dt{font-weight:700}.autohelp dd{margin:0;color:var(--muted)}
 .autohelp code{background:color-mix(in srgb,var(--accent) 10%,var(--card));padding:0 5px;border-radius:4px}
 @media (max-width:640px){.autohelp dl{grid-template-columns:1fr}.autohelp dd{margin-bottom:4px}}
+
+.cathead .catname{font:inherit;font-weight:700;color:var(--accent);width:calc(100% - 40px)}
+
+.cadfilters{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:10px 0}
+.cadsearch{flex:1 1 220px;min-width:180px}
+.cadsel{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px;flex:3 1 560px;align-items:center}
+.cadsel select{width:100%;min-width:0}

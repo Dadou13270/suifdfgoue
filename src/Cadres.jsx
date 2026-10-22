@@ -31,6 +31,8 @@ export default function Cadres({ config }) {
   const missing = [...byNom.values()]
   const [q, setQ] = useState('')
   const [g, setG] = useState('')
+  const [fg, setFg] = useState('')
+  const [fa, setFa] = useState('')
   const [lt, setLt] = useState('')
   const initial = (c) => (String(c.nom || '').trim().normalize('NFD').replace(/[̀-ͯ]/g, '').charAt(0).toUpperCase() || '#').replace(/[^A-Z]/, '#')
   const list = doc?.list || []
@@ -39,7 +41,13 @@ export default function Cadres({ config }) {
   const upKey = upC ? upC.map((x) => `${x.nom}|${x.grade}|${x.prenom}`).join(';') : ''
   useEffect(() => { if (upC) patch({ list: upC }) }, [upKey]) // eslint-disable-line
   const set = (id, p) => patch({ list: list.map((c) => (c.id === id ? { ...c, ...p } : c)) })
-  const shown = list.filter((c) => (!lt || initial(c) === lt) && (!g || c.giff === g) && (!fd || fdfOf(c) === fd) && (!ml || (ml === 'oui' ? !!c.mil : !c.mil)) && (!q || `${c.nom} ${c.prenom}`.toLowerCase().includes(q.toLowerCase())))
+  const gradesAll = config?.lists?.grades || DEFAULT_CONFIG.lists.grades
+  const affs = [...new Set(list.map((c) => String(c.aff || '').trim()).filter(Boolean))].sort((x, y) => x.localeCompare(y, 'fr'))
+  const NONE = '__none'
+  const eq = (f, v) => !f || (f === NONE ? !v : v === f)
+  const nFilters = [q, ml, fd, g, fg, fa].filter(Boolean).length
+  const reset = () => { setQ(''); setMl(''); setFd(''); setG(''); setFg(''); setFa('') }
+  const shown = list.filter((c) => (!lt || initial(c) === lt) && eq(g, c.giff) && eq(fd, fdfOf(c)) && eq(fg, c.grade) && eq(fa, String(c.aff || '').trim()) && (!ml || (ml === 'oui' ? !!c.mil : !c.mil)) && (!q || `${c.grade} ${c.nom} ${c.prenom}`.toLowerCase().includes(q.toLowerCase())))
     .sort((a, b) => String(a.nom || '').localeCompare(String(b.nom || ''), 'fr') || String(a.prenom || '').localeCompare(String(b.prenom || ''), 'fr'))
 
   return (
@@ -47,11 +55,18 @@ export default function Cadres({ config }) {
       <div className="subbar">
         <b>Cadres COD VLTT / CDG <span className="muted">{shown.length}/{list.length}</span></b>
         <div className="actions">
-          <input className="short" placeholder="Rechercher…" value={q} onChange={(e) => setQ(e.target.value)} />
-          <select className="short" value={ml} onChange={(e) => setMl(e.target.value)}><option value="">MIL : tous</option><option value="oui">MIL cochés</option><option value="non">Hors MIL</option></select>
-          <select className="short" value={fd} onChange={(e) => setFd(e.target.value)}><option value="">Tous FDF</option>{fdfs.map((x) => <option key={x}>{x}</option>)}</select>
-          <select className="short" value={g} onChange={(e) => setG(e.target.value)}><option value="">Tous GIFF</option><option>CENTRE</option><option>OUEST</option><option>EST</option></select>
           <button className="primary" onClick={() => patch({ list: [{ id: uid(), grade: '', nom: 'NOUVEAU', prenom: '', dispos: 0, giff: '', mil: false, fonct: '', cdg: '', aff: '', just: '' }, ...list] })}>+ Cadre</button>
+        </div>
+      </div>
+      <div className="cadfilters">
+        <input className="cadsearch" placeholder="Rechercher un nom, prénom ou grade…" value={q} onChange={(e) => setQ(e.target.value)} />
+        <div className="cadsel">
+          <select aria-label="Filtrer par GIFF" value={g} onChange={(e) => setG(e.target.value)}><option value="">GIFF : tous</option><option>CENTRE</option><option>OUEST</option><option>EST</option><option value={NONE}>Sans GIFF</option></select>
+          <select aria-label="Filtrer par MIL" value={ml} onChange={(e) => setMl(e.target.value)}><option value="">MIL : tous</option><option value="oui">MIL cochés</option><option value="non">Hors MIL</option></select>
+          <select aria-label="Filtrer par FDF" value={fd} onChange={(e) => setFd(e.target.value)}><option value="">FDF : tous</option>{fdfs.map((x) => <option key={x}>{x}</option>)}<option value={NONE}>Sans FDF</option></select>
+          <select aria-label="Filtrer par grade" value={fg} onChange={(e) => setFg(e.target.value)}><option value="">Grade : tous</option>{gradesAll.map((x) => <option key={x}>{x}</option>)}<option value={NONE}>Sans grade</option></select>
+          <select aria-label="Filtrer par affectation" value={fa} onChange={(e) => setFa(e.target.value)}><option value="">Affectation : toutes</option>{affs.map((x) => <option key={x}>{x}</option>)}<option value={NONE}>Sans affectation</option></select>
+          {nFilters > 0 && <button onClick={reset}>Réinitialiser ({nFilters})</button>}
         </div>
       </div>
       <div className="alpha" role="group" aria-label="Filtrer par lettre">
