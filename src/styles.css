@@ -254,7 +254,7 @@ select.hc-violet{background:#ede9fe;border-color:#8b5cf6;color:#4c1d95}
 .engchips{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}
 .engchip{border-color:#b91c1c;color:#b91c1c;font-weight:600}
 
-.pax{margin-left:auto;margin-right:8px;font-size:.85em;font-weight:700;padding:1px 8px;border-radius:999px;background:color-mix(in srgb,var(--accent) 14%,var(--card));color:var(--accent);white-space:nowrap;align-self:center}
+.pax{margin-left:auto;margin-right:0;font-size:.85em;font-weight:700;padding:1px 8px;border-radius:999px;background:color-mix(in srgb,var(--accent) 14%,var(--card));color:var(--accent);white-space:nowrap;align-self:center}
 .week td.paxcell{position:relative}
 .pax.abs{position:absolute;top:2px;right:4px;margin:0;z-index:1;font-size:.72em}
 
@@ -323,7 +323,7 @@ select.hc-violet{background:#ede9fe;border-color:#8b5cf6;color:#4c1d95}
 .notifbar:has(.engage.done){flex-wrap:wrap}
 
 .bheadrow{display:flex;align-items:center;gap:6px}.bheadrow .bhead{flex:1}
-.btools{display:inline-flex;gap:4px}.btools button{min-height:32px;padding:2px 8px}
+.btools{display:inline-flex;gap:4px;margin-left:auto}.pax~.btools{margin-left:0}.btools button{min-height:32px;padding:2px 8px}
 .laybar{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:6px 0}.laybar select{min-width:140px}
 .lay-item{border:2px dashed var(--line);border-radius:10px;padding:4px;background:color-mix(in srgb,var(--accent) 4%,transparent);cursor:grab;min-width:0}
 .lay-item.dragging{opacity:.4}.lay-ctl{display:flex;justify-content:space-between;align-items:center;gap:6px;padding:2px 2px 6px;font-size:.9em}
@@ -337,3 +337,5 @@ select.hc-violet{background:#ede9fe;border-color:#8b5cf6;color:#4c1d95}
 .repcards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:10px 0;align-items:start}@media(max-width:760px){.repcards{grid-template-columns:1fr}}
 .repcard h4{margin:0 0 8px;font-size:1em}.reprow{display:grid;grid-template-columns:1fr auto;gap:2px 8px;align-items:center;padding:3px 0;font-size:.92em}
 .reprow i{grid-column:1/-1;height:5px;border-radius:3px;background:linear-gradient(90deg,var(--accent) var(--w),color-mix(in srgb,var(--muted) 18%,transparent) var(--w))}
+.pfilters{display:flex;gap:8px;flex-wrap:wrap;flex:1 1 auto;align-items:center}
+.pfilters select{width:auto;min-width:0;flex:0 1 190px}

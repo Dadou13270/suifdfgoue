@@ -45,6 +45,9 @@ export default function Personnel({ c, set, config, role, selfId, dirty }) {
   useEffect(() => { if (upC) patchCadres({ list: upC }) }, [upKey]) // eslint-disable-line
   const [q, setQ] = useState('')
   const [lt, setLt] = useState('')
+  const [fg, setFg] = useState('')
+  const [ff, setFf] = useState('')
+  const [fc, setFc] = useState('')
   const initial = (c) => (String(c.nom || '').trim().normalize('NFD').replace(/[\u0300-\u036f]/g, '').charAt(0).toUpperCase() || '#').replace(/[^A-Z]/, '#')
   // Noms présents dans les plannings (avec FDF / cadre d'emploi de leur colonne)
   const [plans, setPlans] = useState({})
@@ -90,7 +93,7 @@ export default function Personnel({ c, set, config, role, selfId, dirty }) {
       .map((x) => ({ id: uid(), nom: x.nom, prenom: x.prenom, grade: x.grade || '', cadreEmploi: '', fdf: '', role: '', email: '' }))
     if (add.length) P.save([...P.list, ...add])
   }
-  const shown = P.list.filter((p) => (!lt || initial(p) === lt) && (!q || `${p.nom} ${p.prenom}`.toLowerCase().includes(q.toLowerCase())))
+  const shown = P.list.filter((p) => (!lt || initial(p) === lt) && (!fg || (fg === '__none' ? !p.grade : p.grade === fg)) && (!ff || (ff === '__none' ? !p.fdf : p.fdf === ff)) && (!fc || (fc === '__none' ? !p.cadreEmploi : p.cadreEmploi === fc)) && (!q || `${p.nom} ${p.prenom}`.toLowerCase().includes(q.toLowerCase())))
     .sort((a, b) => String(a.nom || '').localeCompare(String(b.nom || ''), 'fr') || String(a.prenom || '').localeCompare(String(b.prenom || ''), 'fr'))
   const pending = P.list.filter(P.needsSync).length
   const tokens = (s) => String(s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase().split(/[^A-Z]+/).filter(Boolean).sort().join(' ')
@@ -137,6 +140,12 @@ export default function Personnel({ c, set, config, role, selfId, dirty }) {
       })()}
       <div className="subbar">
         <input className="short" placeholder="Rechercher…" value={q} onChange={(e) => setQ(e.target.value)} />
+        <div className="pfilters">
+          <select aria-label="Filtrer par grade" value={fg} onChange={(e) => setFg(e.target.value)}><option value="">Grade : tous</option>{grades.map((g) => <option key={g} value={g}>{g}</option>)}<option value="__none">Sans grade</option></select>
+          <select aria-label="Filtrer par FDF" value={ff} onChange={(e) => setFf(e.target.value)}><option value="">FDF : tous</option>{fdfs.map((f) => <option key={f} value={f}>{f}</option>)}<option value="__none">Sans FDF</option></select>
+          <select aria-label="Filtrer par cadre d'emploi" value={fc} onChange={(e) => setFc(e.target.value)}><option value="">Cadre d'emploi : tous</option>{cadresEmploi.map((g) => <option key={g} value={g}>{g}</option>)}<option value="__none">Non renseigné</option></select>
+          {(fg || ff || fc) && <button onClick={() => { setFg(''); setFf(''); setFc('') }}>Réinitialiser</button>}
+        </div>
         <div className="actions">
           <button onClick={P.syncAll} disabled={!pending || dirty} title={dirty ? 'Enregistrez d’abord les paramètres' : ''}>Appliquer les droits{pending ? ` (${pending})` : ''}</button>
           <button className="primary" onClick={() => P.save([{ id: uid(), nom: 'NOUVEAU', prenom: '', grade: '', cadreEmploi: '', fdf: '', role: '', email: '' }, ...P.list])}>+ Personne</button>
