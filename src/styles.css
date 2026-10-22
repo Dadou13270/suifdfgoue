@@ -385,3 +385,6 @@ input.crew-code:focus{background:color-mix(in srgb,var(--accent) 6%,var(--card))
 .cadsearch{flex:1 1 220px;min-width:180px}
 .cadsel{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px;flex:3 1 560px;align-items:center}
 .cadsel select{width:100%;min-width:0}
+
+.validbar{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin:10px 0}
+.validbar.ok{padding:10px 14px;border-radius:var(--r);background:color-mix(in srgb,#16a34a 14%,var(--card));border:1px solid #16a34a;color:var(--fg)}

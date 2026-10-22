@@ -30,6 +30,7 @@ export const EDITABLE_ROLES = ['admin', 'chefcolonne', 'ogg']
 export const READONLY_TABS = { cds: ['plannings', 'engins', 'calendrier', 'carto'] }
 export const isReadOnly = (role, tab) => !!READONLY_TABS[role]?.includes(tab)
 // Choix / modification de la disposition : super administrateur et administrateur
+export const canValidate = (role) => ['superadmin', 'admin', 'chefcolonne', 'ogg'].includes(role)
 export const canLayout = (role) => role === 'superadmin' || role === 'admin'
 
 // Droits en vigueur (config/rights, modifiable par le super administrateur et l'administrateur)

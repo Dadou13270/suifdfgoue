@@ -2,7 +2,7 @@ import React, { useContext, useState } from 'react'
 import { EngineCell, TextField, Lookup, LocField, DutyField, NotifyBar } from './Cell.jsx'
 import { cellKey, listIdFor, guessFilter, blockName, hdrClass, isOff, effBlock, paxOf, isShown } from './util.js'
 import { BlockTools } from './BlockTools.jsx'
-import { canLayout } from './roles.js'
+import { canLayout, canValidate } from './roles.js'
 import { useLayouts, LayoutBar, reconcile, moveBefore, moveToRowEnd, moveNewRow, step } from './Layouts.jsx'
 import { useEngage, DayIndexProvider } from './engage.js'
 import { isAddable } from './ExtraRows.jsx'
@@ -65,7 +65,22 @@ function Block({ b, config, day, onPatch }) {
   )
 }
 
-export default function DayView({ config, day, onPatch, role }) {
+function ValidBar({ v, can, onValidate, onCancel }) {
+  if (v?.at) {
+    const t = new Date(v.at)
+    const h = t.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }).replace(':', 'h')
+    const j = t.toLocaleDateString('fr-FR')
+    return (
+      <div className="validbar ok" role="status">
+        <span>✅ <b>Dispositif validé à {h} le {j}</b>{v.by ? ` par ${v.by}` : ''}</span>
+        {can && <button onClick={onCancel}>Annuler la validation</button>}
+      </div>
+    )
+  }
+  return can ? <div className="validbar"><button className="primary" onClick={onValidate}>✔ Valider le dispositif</button></div> : null
+}
+
+export default function DayView({ config, day, onPatch, role, who, date }) {
   const lay = useLayouts()
   const [edit, setEdit] = useState(false)
   const [draft, setDraft] = useState([])
@@ -122,6 +137,7 @@ export default function DayView({ config, day, onPatch, role }) {
         ))}
       </section>
       {canLayout(role) && <LayoutBar lay={lay} editable edit={edit} onEdit={startEdit} onCancel={() => setEdit(false)} onSave={(l, cb) => cb(reconcile(draft, allIds))} />}
+      <ValidBar v={day.validated} can={canValidate(role)} onValidate={() => onPatch({ validated: { at: new Date().toISOString(), by: who || '' } })} onCancel={() => onPatch({ validated: null })} />
       <Legend legend={config.legend} />
       {rows.map((r, i) => (
         <React.Fragment key={i}>

@@ -188,7 +188,7 @@ export default function App() {
         : view === 'day' ? (
           <>
             <h2 className="daytitle">{fmtLong(date)}</h2>
-            <DayView config={config} role={role} day={days[date] || {}} onPatch={(d) => patch(date, d)} />
+            <DayView config={config} role={role} who={user?.displayName || user?.email || ''} day={days[date] || {}} onPatch={(d) => patch(date, d)} />
           </>
         ) : (
           <WeekView role={role} config={config} dates={dates} days={days} onPatch={patch} onOpen={(d) => { setDate(d); setView('day') }} />
