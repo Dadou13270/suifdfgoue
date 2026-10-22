@@ -66,21 +66,28 @@ export default function Users({ role, selfId, config }) {
       </div>
       <h3>Droits par rôle</h3>
       <p className="muted small">Cochez les onglets accessibles à chaque rôle. Le super administrateur a toujours tous les droits ; l'administrateur garde Paramètres et Rôles ; seul le super administrateur modifie les droits de l'administrateur. La colonne « Rôles » est fixe.</p>
-      <div className="tablewrap">
-        <table className="week permtable">
-          <thead><tr><th>Rôle</th>{Object.entries(TAB_LABELS).map(([k, l]) => <th key={k}>{l}</th>)}</tr></thead>
-          <tbody>
-            {['superadmin', 'admin', 'chefcolonne', 'ogg', 'cds'].map((r) => (
-              <tr key={r}><th>{ROLES[r].label}</th>
+      <div className="perm-grid">
+        {['superadmin', 'admin', 'chefcolonne', 'ogg', 'cds'].map((r) => {
+          const n = Object.keys(TAB_LABELS).filter((t) => access[r].includes(t)).length
+          return (
+            <section className="card perm-card" key={r}>
+              <h4>{ROLES[r].label} <span className="muted">{n}/{Object.keys(TAB_LABELS).length}</span></h4>
+              <div className="perm-list">
                 {Object.keys(TAB_LABELS).map((t) => {
                   const on = access[r].includes(t)
                   const edit = canEditRight(role, r, t)
-                  return <td key={t} className="ck"><input type="checkbox" checked={on} disabled={!edit} aria-label={`${ROLES[r].label} : ${TAB_LABELS[t]}`} onChange={() => toggle(r, t)} title={edit ? '' : 'Verrouillé'} /></td>
+                  return (
+                    <label key={t} className={`perm-sw ${on ? 'on' : ''} ${edit ? '' : 'lock'}`} title={edit ? '' : 'Verrouillé'}>
+                      <input type="checkbox" checked={on} disabled={!edit} aria-label={`${ROLES[r].label} : ${TAB_LABELS[t]}`} onChange={() => toggle(r, t)} />
+                      <span className="perm-name">{TAB_LABELS[t]}</span>
+                      <i className="perm-knob" aria-hidden="true" />
+                    </label>
+                  )
                 })}
-              </tr>
-            ))}
-          </tbody>
-        </table>
+              </div>
+            </section>
+          )
+        })}
       </div>
       <div className="line"><button onClick={reset} disabled={!['superadmin', 'admin'].includes(role)}>Rétablir les droits par défaut</button></div>
       <p className="muted small">Réservé au super administrateur : import des données du classeur, réinitialisation de la configuration, rôle super administrateur. Les droits sont aussi appliqués côté serveur par les règles Firestore.</p>

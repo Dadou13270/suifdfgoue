@@ -218,11 +218,28 @@ function Auto({ c, set }) {
   ])
   return (
     <div>
+      <section className="card autohelp">
+        <h4>Comment fonctionne le remplissage automatique</h4>
+        <p>À l'ouverture d'un jour, le dispositif se remplit tout seul à partir des plannings et du calendrier perpétuel. À l'ouverture, seules les cases <b>vides</b> sont complétées : ce que vous saisissez à la main n'est pas écrasé (le bouton « Importer le planning » relance le remplissage à la demande).</p>
+        <dl>
+          <dt>Compléter automatiquement le dispositif</dt><dd>Active ou coupe tout le remplissage à l'ouverture d'un jour.</dd>
+          <dt>Reporter les engins du calendrier perpétuel</dt><dd>Place dans le dispositif les engins prévus au calendrier pour la date.</dd>
+          <dt>Afficher le grade avant le nom</dt><dd>Écrit « CNE DURAND » au lieu de « DURAND ». Le grade vient de Cadres, sinon de Gestion du personnel.</dd>
+        </dl>
+        <p><b>Règles</b> — chacune relie une source à une cible du dispositif (« → Cible ») :</p>
+        <dl>
+          <dt>Colonne d'un planning</dt><dd>Reprend le nom inscrit ce jour-là dans la colonne choisie d'un planning.</dd>
+          <dt>Secteur du calendrier → chef</dt><dd>Lit dans le calendrier, groupe « Secteur des GIFF », le secteur (A/B/C) du jour pour la ligne indiquée (ex. GIFF-1), puis prend dans la colonne du planning portant ce nom de secteur le chef du jour.</dd>
+          <dt>Ligne du calendrier = notre groupement</dt><dd>Repère la ligne du calendrier (groupe + début de libellé, ex. MODCOL) dont la valeur du jour correspond à notre groupement, et inscrit son libellé dans la cible (format <code>{'{l}'}</code>).</dd>
+          <dt>Engin du cadre</dt><dd>Catégorie du parc (ex. VLTT GIFF) : l'engin affecté au cadre, au CIS d'affectation, est placé dans la cellule choisie. S'il vise la même cellule que le nom, il est ajouté à la suite (NOM - VLTT-5 CBE).</dd>
+        </dl>
+        <p><b>Format</b> de la cellule : <code>{'{v}'}</code> nom · <code>{'{g}'}</code> grade (s'il est présent, la case « grade » est ignorée) · <code>{'{aff}'}</code> affectation du cadre · <code>{'{s}'}</code> secteur A/B/C du calendrier · <code>{'{l}'}</code> libellé de la ligne du calendrier.</p>
+        <p className="muted small">Pensez à cliquer sur « Enregistrer » pour appliquer les règles.</p>
+      </section>
       <label className="chk"><input type="checkbox" checked={af.enabled} onChange={(e) => setAf({ enabled: e.target.checked })} /> Compléter automatiquement le dispositif à l'ouverture d'un jour</label>
       <label className="chk"><input type="checkbox" checked={af.calendar !== false} onChange={(e) => setAf({ calendar: e.target.checked })} /> Reporter les engins du calendrier perpétuel</label>
       <label className="chk"><input type="checkbox" checked={!!af.grade} onChange={(e) => setAf({ grade: e.target.checked })} /> Afficher le grade avant le nom (ex. CNE DURAND) — grade pris dans Cadres, sinon Gestion du personnel</label>
       <h3>Règles issues des plannings</h3>
-      <p className="muted small">Format : {'{v}'} = nom, {'{g}'} = grade (si présent dans le format, la case « grade » est ignorée), {'{aff}'} = affectation du cadre (liste des cadres), {'{s}'} = secteur (A/B/C) donné par le calendrier, {'{l}'} = libellé de la ligne du calendrier. L'engin du cadre est pris au CIS d'affectation du cadre ; s'il vise la même cellule, il est ajouté au nom (NOM - VLTT-5 CBE).</p>
       {af.rules.map((r, i) => (
         <div className="card rule" key={r.id}>
           <div className="line wrap">
@@ -275,29 +292,46 @@ function Engins({ c, set }) {
       {sub === 'crew' && <>
       <h3>Effectif par engin (PAX)</h3>
       <p className="muted small">Le compteur « x PAX » en haut de chaque bloc additionne l'équipage des engins saisis. Le type est lu au début du code (CCFM-12 → CCFM).</p>
-      {crew.map((x, i) => (
-        <div className="line wrap" key={i}>
-          <input className="short" value={x.key} placeholder="Type (CCFM)" onChange={(e) => set({ crew: upd(crew, i, { key: e.target.value.toUpperCase() }) })} />
-          <input type="number" min="0" className="short" value={x.pax} onChange={(e) => set({ crew: upd(crew, i, { pax: Number(e.target.value) }) })} /> <span className="muted">hommes</span>
-          <button className="danger" onClick={() => set({ crew: del(crew, i) })}>✕</button>
-        </div>
-      ))}
-      {todo.length > 0 && (
-        <div className="card">
-          <b>Types du parc sans effectif</b> <span className="muted small">(non comptés tant que le nombre d'hommes n'est pas renseigné)</span>
-          {todo.map((k) => (
-            <div className="line wrap" key={k}>
-              <span className="ecode">{k}</span>
-              <input type="number" min="0" className="short" placeholder="hommes" value="" onChange={(e) => e.target.value !== '' && set({ crew: [...crew, { key: k, pax: Number(e.target.value) }] })} />
-              <span className="muted">hommes</span>
+      <div className="crew-grid">
+        {crew.map((x, i) => (
+          <div className="crew-tile" key={i}>
+            <button className="crew-x" aria-label="Supprimer" onClick={() => set({ crew: del(crew, i) })}>✕</button>
+            <input className="crew-code" value={x.key} placeholder="Type (CCFM)" onChange={(e) => set({ crew: upd(crew, i, { key: e.target.value.toUpperCase() }) })} />
+            <div className="crew-step">
+              <button aria-label="Moins" onClick={() => set({ crew: upd(crew, i, { pax: Math.max(0, (Number(x.pax) || 0) - 1) }) })}>−</button>
+              <input type="number" min="0" aria-label={`Hommes ${x.key}`} value={x.pax} onChange={(e) => set({ crew: upd(crew, i, { pax: Number(e.target.value) }) })} />
+              <button aria-label="Plus" onClick={() => set({ crew: upd(crew, i, { pax: (Number(x.pax) || 0) + 1 }) })}>+</button>
             </div>
-          ))}
-        </div>
+            <span className="crew-unit">hommes</span>
+          </div>
+        ))}
+        <button className="crew-add" onClick={() => set({ crew: [...crew, { key: '', pax: 2 }] })}>+ Type d'engin</button>
+      </div>
+      {todo.length > 0 && (
+        <>
+          <h4 className="crew-sub">Types du parc sans effectif <span className="muted small">non comptés tant que le nombre d'hommes n'est pas renseigné</span></h4>
+          <div className="crew-grid">
+            {todo.map((k) => (
+              <div className="crew-tile todo" key={k}>
+                <span className="crew-code ecode">{k}</span>
+                <input type="number" min="0" className="crew-num" placeholder="hommes" aria-label={`Hommes ${k}`} value="" onChange={(e) => e.target.value !== '' && set({ crew: [...crew, { key: k, pax: Number(e.target.value) }] })} />
+              </div>
+            ))}
+          </div>
+        </>
       )}
-      <div className="line wrap">
-        <button onClick={() => set({ crew: [...crew, { key: '', pax: 2 }] })}>+ Type d'engin</button>
-        <span>SIGAR (par moyen) :</span><input type="number" min="0" className="short" value={c.sigarPax ?? DEFAULT_CONFIG.sigarPax} onChange={(e) => set({ sigarPax: Number(e.target.value) })} /> <span className="muted">hommes</span>
-        <span>Chaîne de commandement (par personne) :</span><input type="number" min="0" className="short" value={c.cdtPax ?? DEFAULT_CONFIG.cdtPax} onChange={(e) => set({ cdtPax: Number(e.target.value) })} /> <span className="muted">PAX</span>
+      <h4 className="crew-sub">Autres compteurs</h4>
+      <div className="crew-grid">
+        <label className="crew-tile">
+          <span className="crew-code">SIGAR</span>
+          <input type="number" min="0" className="crew-num" value={c.sigarPax ?? DEFAULT_CONFIG.sigarPax} onChange={(e) => set({ sigarPax: Number(e.target.value) })} />
+          <span className="crew-unit">hommes par moyen</span>
+        </label>
+        <label className="crew-tile">
+          <span className="crew-code">Chaîne de commandement</span>
+          <input type="number" min="0" className="crew-num" value={c.cdtPax ?? DEFAULT_CONFIG.cdtPax} onChange={(e) => set({ cdtPax: Number(e.target.value) })} />
+          <span className="crew-unit">PAX par personne</span>
+        </label>
       </div>
       </>}
       {sub === 'stat' && <>
