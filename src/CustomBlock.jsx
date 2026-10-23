@@ -6,25 +6,13 @@ import { BlockTools } from './BlockTools.jsx'
 
 export const newBlock = () => ({ id: uid(), title: 'Autre bloc', head: false, location: false, rows: [{ id: uid(), label: 'Ligne 1' }] })
 
-// Carte de bloc configurable (⚙) : nom, lignes, intitulé, emplacement et horaires.
-// update(p, extra) enregistre la définition du bloc ; onDelete / onReset facultatifs.
-export function BlockCard({ off, b, day, config, onPatch, compact, update, onDelete, onReset, titleExtra }) {
-  const [edit, setEdit] = useState(false)
-  const engage = useEngage()
+export function BlockEditor({ b, update, onDelete, onReset, showTitle }) {
   const clearRow = (r) => ({ [cellKey(b.id, r.id)]: { text: '', status: '', auto: false } })
   const delRow = (r) => update({ rows: b.rows.filter((y) => y.id !== r.id) }, { cells: clearRow(r) })
   const setRowLabel = (r, t) => update({ rows: b.rows.map((y) => (y.id === r.id ? { ...y, label: t } : y)) })
-
   return (
-    <section className={`card block custom ${compact ? 'compact' : ''} ${off ? 'off' : ''}`}>
-      <div className="bhead static">
-        {edit ? <TextField className="headfield" value={b.title} onCommit={(t) => update({ title: t })} /> : <b>{b.title}{titleExtra}</b>}
-        {!edit && paxOf(config, b, day) > 0 && <span className="pax">{paxOf(config, b, day)} PAX</span>}
-        <BlockTools b={b} day={day} onPatch={onPatch} config={config} />
-        <button className={edit ? 'primary' : ''} onClick={() => setEdit(!edit)} aria-label="Configurer le bloc" title="Configurer le bloc">{edit ? 'OK' : '⚙'}</button>
-      </div>
-      {edit && (
         <div className="bedit-inline">
+          {showTitle && <TextField className="headfield" value={b.title} onCommit={(t) => update({ title: t })} />}
           <label className="chk"><input type="checkbox" checked={!!b.head} onChange={(e) => update({ head: e.target.checked })} /> Ligne d'intitulé</label>
           <label className="chk"><input type="checkbox" checked={!!b.duty} onChange={(e) => update({ duty: e.target.checked })} /> Astreinte / Caserné + lieu + horaires</label>
           <label className="chk"><input type="checkbox" checked={!!b.location} onChange={(e) => update({ location: e.target.checked })} /> Emplacement et horaires</label>
@@ -40,7 +28,24 @@ export function BlockCard({ off, b, day, config, onPatch, compact, update, onDel
             {onDelete && <button className="danger" onClick={onDelete}>Supprimer le bloc</button>}
           </div>
         </div>
-      )}
+  )
+}
+
+// Carte de bloc configurable (⚙) : nom, lignes, intitulé, emplacement et horaires.
+// update(p, extra) enregistre la définition du bloc ; onDelete / onReset facultatifs.
+export function BlockCard({ off, b, day, config, onPatch, compact, update, onDelete, onReset, titleExtra, noConfig }) {
+  const [edit, setEdit] = useState(false)
+  const engage = useEngage()
+
+  return (
+    <section className={`card block custom ${compact ? 'compact' : ''} ${off ? 'off' : ''}`}>
+      <div className="bhead static">
+        {edit ? <TextField className="headfield" value={b.title} onCommit={(t) => update({ title: t })} /> : <b>{b.title}{titleExtra}</b>}
+        {!edit && paxOf(config, b, day) > 0 && <span className="pax">{paxOf(config, b, day)} PAX</span>}
+        <BlockTools b={b} day={day} onPatch={onPatch} config={config} />
+        {!noConfig && <button className={edit ? 'primary' : ''} onClick={() => setEdit(!edit)} aria-label="Configurer le bloc" title="Configurer le bloc">{edit ? 'OK' : '⚙'}</button>}
+      </div>
+      {edit && <BlockEditor b={b} update={update} onDelete={onDelete} onReset={onReset} />}
       <div className="bbody">
         {b.head && <TextField className="headfield" value={day.heads?.[b.id]} placeholder={b.headHint || 'Chef / intitulé'} onCommit={(t) => onPatch({ heads: { [b.id]: t } })} />}
         {b.rows.map((r) => (
@@ -80,14 +85,28 @@ export default function CustomBlock({ b, day, config, onPatch, compact }) {
 }
 
 // Bloc de la configuration (ex. « Autres ») : mêmes réglages, propres au jour affiché
-export function ConfigBlock({ b, day, config, onPatch, compact, off }) {
+export function ConfigBlock({ b, day, config, onPatch, compact, off, noConfig }) {
   const eb = effBlock(b, day)
   const has = !!day.overrides?.[b.id]
   const update = (p, extra = {}) => onPatch({ overrides: { [b.id]: { title: eb.title, head: !!eb.head, duty: !!eb.duty, location: !!eb.location, headHint: eb.headHint || '', rows: eb.rows, ...p } }, ...extra })
   const suffix = day.names?.[b.id] ? ` · ${day.names[b.id]}` : ''
-  return <BlockCard {...{ off, b: eb, day, config, onPatch, compact, update, titleExtra: suffix, onReset: has ? () => onPatch({ overrides: { [b.id]: null } }) : null }} />
+  return <BlockCard {...{ off, noConfig, b: eb, day, config, onPatch, compact, update, titleExtra: suffix, onReset: has ? () => onPatch({ overrides: { [b.id]: null } }) : null }} />
 }
 
 export function AddBlockButton({ day, onPatch, compact }) {
   return <button className="addbtn" onClick={() => onPatch({ customBlocks: [...(day.customBlocks || []), newBlock()] })}>+ {compact ? 'Bloc' : 'Ajouter un bloc'}</button>
+}
+
+// Vue semaine : bouton ⚙ + éditeur du bloc pour un jour donné (même réglages que la carte)
+export function WeekCfg({ b, day, onPatch }) {
+  const [open, setOpen] = useState(false)
+  const eb = effBlock(b, day)
+  const has = !!day.overrides?.[b.id]
+  const update = (p, extra = {}) => onPatch({ overrides: { [b.id]: { title: eb.title, head: !!eb.head, duty: !!eb.duty, location: !!eb.location, headHint: eb.headHint || '', rows: eb.rows, ...p } }, ...extra })
+  return (
+    <>
+      <button className={`wkcfg ${open ? 'primary' : ''}`} type="button" onClick={() => setOpen(!open)} aria-label="Configurer le bloc" title="Configurer le bloc">{open ? 'OK' : '⚙'}</button>
+      {open && <div style={{ flexBasis: '100%' }}><BlockEditor showTitle b={eb} update={update} onReset={has ? () => onPatch({ overrides: { [b.id]: null } }) : null} /></div>}
+    </>
+  )
 }

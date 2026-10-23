@@ -4,7 +4,7 @@ import { Legend } from './DayView.jsx'
 import { DayIndexProvider } from './engage.js'
 import { isAddable } from './ExtraRows.jsx'
 import HeadLine from './HeadLine.jsx'
-import CustomBlock, { ConfigBlock, AddBlockButton } from './CustomBlock.jsx'
+import CustomBlock, { AddBlockButton, WeekCfg } from './CustomBlock.jsx'
 import { BlockTools } from './BlockTools.jsx'
 import { useLayouts, LayoutBar, orderIds } from './Layouts.jsx'
 import { canLayout } from './roles.js'
@@ -37,42 +37,39 @@ export default function WeekView({ config, dates, days, onPatch, onOpen, role })
     const blob = new Blob(['﻿' + rows.map((r) => r.map(q).join(';')).join('\n')], { type: 'text/csv' })
     const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `dispositif_${dates[0]}.csv`; a.click()
   }
+  // tous les blocs en tableau ; ceux « configurables chaque jour » ont un ⚙ par jour (lignes, intitulé, astreinte, emplacement)
+  const eb = (b, d) => effBlock(b, days[d])
+  const rowsOf = (b) => { const m = new Map(); dates.forEach((d) => eb(b, d).rows.forEach((r) => { if (!m.has(r.id)) m.set(r.id, r) })); return [...m.values()] }
   const blockRows = (list) => list.map((b, bi) => (
               <React.Fragment key={b.id}>
                 {bi === 0 && (
                   <tr className="secrow"><th colSpan={dates.length + 1}>{b.section === 'cdt' ? (config.cdtTitle || 'Chaîne de commandement') : 'Dispositif'}</th></tr>
                 )}
-                {isAddable(b) ? (
-                  <tr><th className="sticky sub">{b.title}</th>
-                    {dates.map((d) => <td key={d} className={`customcell ${off(d, b)}`}><DayIndexProvider cells={days[d]?.cells}><ConfigBlock compact b={b} day={days[d] || {}} config={config} onPatch={(p) => onPatch(d, p)} /></DayIndexProvider></td>)}
-                  </tr>
-                ) : <>
                 <tr className="brow"><th className="sticky" colSpan={1}>{baseTitle(b)}</th>
-                  {dates.map((d) => (
-                    <td key={d} className={`${off(d, b)} paxcell`}><BlockTools b={effBlock(b, days[d])} day={days[d] || {}} onPatch={(p) => onPatch(d, p)} config={config} />{paxOf(config, effBlock(b, days[d]), days[d]) > 0 && <span className="pax abs">{paxOf(config, effBlock(b, days[d]), days[d])} PAX</span>}{b.customName && <TextField className="headfield" value={days[d]?.names?.[b.id]} placeholder="Nom personnalisé" onCommit={(t) => onPatch(d, { names: { [b.id]: t } })} />}{b.head && (b.headCis ? <HeadLine compact b={b} day={days[d] || {}} config={config} fix={fix} onPatch={(p) => onPatch(d, p)} /> : <div className={days[d]?.headsAuto?.[b.id] ? 'auto' : ''}><TextField className="headfield" value={days[d]?.heads?.[b.id]} placeholder={b.headHint} fix={fix}
+                  {dates.map((d) => { const e = eb(b, d); return (
+                    <td key={d} className={`${off(d, b)} paxcell`}><div className="hcluster">{paxOf(config, e, days[d]) > 0 && <span className="pax">{paxOf(config, e, days[d])} PAX</span>}<BlockTools b={e} day={days[d] || {}} onPatch={(p) => onPatch(d, p)} config={config} />{isAddable(b) && <WeekCfg b={b} day={days[d] || {}} onPatch={(p) => onPatch(d, p)} />}</div>{isAddable(b) && e.title !== b.title && <div className="wktitle2">{e.title}</div>}{b.customName && <TextField className="headfield" value={days[d]?.names?.[b.id]} placeholder="Nom personnalisé" onCommit={(t) => onPatch(d, { names: { [b.id]: t } })} />}{e.head && (e.headCis ? <HeadLine compact b={e} day={days[d] || {}} config={config} fix={fix} onPatch={(p) => onPatch(d, p)} /> : <div className={days[d]?.headsAuto?.[b.id] ? 'auto' : ''}><TextField className="headfield" value={days[d]?.heads?.[b.id]} placeholder={e.headHint} fix={fix}
                       onCommit={(t) => onPatch(d, { heads: { [b.id]: t }, headsAuto: { [b.id]: false } })} /></div>)}</td>
-                  ))}
+                  ) })}
                 </tr>
-                {b.rows.map((r) => (
+                {rowsOf(b).map((r) => (
                   <tr key={r.id}>
                     <th className="sticky sub">{r.label}</th>
                     {dates.map((d) => (
-                      <td key={d} className={off(d, b)}><DayIndexProvider cells={days[d]?.cells}><EngineCell ckey={cellKey(b.id, r.id)} compact cis={days[d]?.headCis?.[b.id]} filter={guessFilter(r)} listId={listIdFor(r)} cell={days[d]?.cells?.[cellKey(b.id, r.id)]} legend={config.legend}
-                        onChange={(c) => onPatch(d, { cells: { [cellKey(b.id, r.id)]: c } })} /></DayIndexProvider></td>
+                      <td key={d} className={off(d, b)}>{eb(b, d).rows.some((x) => x.id === r.id) && <DayIndexProvider cells={days[d]?.cells}><EngineCell ckey={cellKey(b.id, r.id)} compact cis={days[d]?.headCis?.[b.id]} filter={guessFilter(r)} listId={listIdFor(r)} cell={days[d]?.cells?.[cellKey(b.id, r.id)]} legend={config.legend}
+                        onChange={(c) => onPatch(d, { cells: { [cellKey(b.id, r.id)]: c } })} /></DayIndexProvider>}</td>
                     ))}
                   </tr>
                 ))}
-                {b.duty && (
+                {dates.some((d) => eb(b, d).duty) && (
                   <tr><th className="sticky sub">🕒 Astreinte / Caserné</th>
-                    {dates.map((d) => <td key={d} className={off(d, b)}><DutyField compact value={days[d]?.duty?.[b.id]} lists={config.lists} onChange={(v) => onPatch(d, { duty: { [b.id]: v } })} /></td>)}
+                    {dates.map((d) => <td key={d} className={off(d, b)}>{eb(b, d).duty && <DutyField compact value={days[d]?.duty?.[b.id]} lists={config.lists} onChange={(v) => onPatch(d, { duty: { [b.id]: v } })} />}</td>)}
                   </tr>
                 )}
-                {b.location && (
+                {dates.some((d) => eb(b, d).location) && (
                   <tr><th className="sticky sub">📍 Emplacement et horaires</th>
-                    {dates.map((d) => <td key={d} className={off(d, b)}><LocField compact value={days[d]?.locs?.[b.id]} lists={config.lists} onChange={(v) => onPatch(d, { locs: { [b.id]: v } })} /></td>)}
+                    {dates.map((d) => <td key={d} className={off(d, b)}>{eb(b, d).location && <LocField compact value={days[d]?.locs?.[b.id]} lists={config.lists} onChange={(v) => onPatch(d, { locs: { [b.id]: v } })} />}</td>)}
                   </tr>
                 )}
-                </>}
               </React.Fragment>
             ))
   const off = (d, b) => (isOff(config, days[d]?.header?.niveau, b.id) || !isShown(b, days[d]) ? 'off' : '')

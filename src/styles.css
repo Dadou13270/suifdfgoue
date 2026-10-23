@@ -401,3 +401,16 @@ input.crew-code:focus{background:color-mix(in srgb,var(--accent) 6%,var(--card))
 .jr-ta{width:100%;resize:vertical;font:inherit}
 .jr-new{display:flex;gap:8px;align-items:flex-end;padding:12px 16px;border-top:1px solid var(--line)}
 .jr-new .jr-ta{flex:1}
+
+.wkcfg{min-height:32px;padding:2px 8px;margin-left:4px}
+.wktitle2{font-weight:700;color:var(--accent);font-size:.9em;margin:2px 0}
+.paxcell .bedit-inline{margin-top:6px}
+.brow td{vertical-align:top}
+
+.hcluster{display:flex;align-items:center;justify-content:flex-end;flex-wrap:wrap;gap:6px;margin-bottom:4px}
+.hcluster .pax{margin:0}
+.hcluster .btools{margin-left:0}
+.bheadrow .pax{margin:0 2px 0 0;flex:none}
+.chk input[type=checkbox],.bedit-inline input[type=checkbox]{flex:none;width:16px;height:16px;min-height:0;margin:0;accent-color:var(--accent)}
+.bedit-inline .chk{align-items:flex-start;line-height:1.25}
+.bedit-inline .chk input[type=checkbox]{margin-top:2px}

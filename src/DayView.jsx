@@ -19,46 +19,47 @@ export function Legend({ legend }) {
   )
 }
 
-function Block({ b, config, day, onPatch }) {
+export function Block({ b, config, day, onPatch, compact }) {
   const { fix } = useContext(Lookup)
   const [open, setOpen] = useState(true)
   const engage = useEngage()
   const pax = paxOf(config, effBlock(b, day), day)
   const head = day.heads?.[b.id]
   return (
-    <section className={`card block${isOff(config, day.header?.niveau, b.id) ? ' off' : ''}`}>
+    <section className={`card block${compact ? ' compact' : ''}${isOff(config, day.header?.niveau, b.id) ? ' off' : ''}`}>
       <div className="bheadrow">
         <button className="bhead" onClick={() => setOpen(!open)}>
-          <b>{blockName(b, day)}</b>{pax > 0 && <span className="pax">{pax} PAX</span>}<span className="chev">{open ? '▾' : '▸'}</span>
+          <b>{blockName(b, day)}</b><span className="chev">{open ? '▾' : '▸'}</span>
         </button>
+        {pax > 0 && <span className="pax">{pax} PAX</span>}
         <BlockTools b={effBlock(b, day)} day={day} onPatch={onPatch} config={config} />
       </div>
       {open && (
         <div className="bbody">
           {b.customName && <TextField className="headfield" value={day.names?.[b.id]} placeholder="Nom personnalisé (ex. Renfort CIS…)" onCommit={(t) => onPatch({ names: { [b.id]: t } })} />}
-          {b.head && (b.headCis ? <HeadLine b={b} day={day} config={config} onPatch={onPatch} fix={fix} />
+          {b.head && (b.headCis ? <HeadLine compact={compact} b={b} day={day} config={config} onPatch={onPatch} fix={fix} />
             : <div className={day.headsAuto?.[b.id] ? 'auto' : ''}><TextField className="headfield" value={head} fix={fix} placeholder={b.headHint || 'Chef / intitulé'}
             onCommit={(t) => onPatch({ heads: { [b.id]: t }, headsAuto: { [b.id]: false } })} /></div>)}
           {b.rows.map((r) => (
             <div className="row" key={r.id}>
               <label>{r.label}</label>
-              <EngineCell ckey={cellKey(b.id, r.id)} cis={day.headCis?.[b.id]} filter={guessFilter(r)} listId={listIdFor(r)} cell={day.cells?.[cellKey(b.id, r.id)]} legend={config.legend}
+              <EngineCell compact={compact} ckey={cellKey(b.id, r.id)} cis={day.headCis?.[b.id]} filter={guessFilter(r)} listId={listIdFor(r)} cell={day.cells?.[cellKey(b.id, r.id)]} legend={config.legend}
                 onChange={(c) => onPatch({ cells: { [cellKey(b.id, r.id)]: c }, ...(day.notif?.[b.id] && (c?.text || '') !== (day.cells?.[cellKey(b.id, r.id)]?.text || '') ? { notif: { [b.id]: null } } : {}) })} />
             </div>
           ))}
           {b.duty && (
             <div className="row loc">
               <label>🕒 Astreinte / Caserné</label>
-              <DutyField value={day.duty?.[b.id]} lists={config.lists} onChange={(v) => onPatch({ duty: { [b.id]: v } })} />
+              <DutyField compact={compact} value={day.duty?.[b.id]} lists={config.lists} onChange={(v) => onPatch({ duty: { [b.id]: v } })} />
             </div>
           )}
           {b.location && (
             <div className="row loc">
               <label>📍 Emplacement et horaires</label>
-              <LocField value={day.locs?.[b.id]} lists={config.lists} onChange={(v) => onPatch({ locs: { [b.id]: v } })} />
+              <LocField compact={compact} value={day.locs?.[b.id]} lists={config.lists} onChange={(v) => onPatch({ locs: { [b.id]: v } })} />
             </div>
           )}
-          {b.rows.length > 0 && <NotifyBar label={b.section === 'cdt' ? 'Cadres informés' : 'CIS informés'} notif={day.notif?.[b.id]} onNotif={(v) => onPatch({ notif: { [b.id]: v } })} engaged={day.engaged?.[b.id]} onEngaged={(v) => { engage(effBlock(b, day), day, v); onPatch({ engaged: { [b.id]: v } }) }} aladin={day.aladin?.[b.id]} onAladin={(v) => { engage(effBlock(b, day), day, v, 'aladin'); onPatch({ aladin: { [b.id]: v } }) }} />}
+          {b.rows.length > 0 && <NotifyBar compact={compact} label={b.section === 'cdt' ? 'Cadres informés' : 'CIS informés'} notif={day.notif?.[b.id]} onNotif={(v) => onPatch({ notif: { [b.id]: v } })} engaged={day.engaged?.[b.id]} onEngaged={(v) => { engage(effBlock(b, day), day, v); onPatch({ engaged: { [b.id]: v } }) }} aladin={day.aladin?.[b.id]} onAladin={(v) => { engage(effBlock(b, day), day, v, 'aladin'); onPatch({ aladin: { [b.id]: v } }) }} />}
         </div>
       )}
     </section>
