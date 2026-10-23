@@ -74,7 +74,7 @@ export default function App() {
   const [cadresDoc] = useDoc('cadres/main', ready)
   const [persDoc] = useDoc('personnel/main', ready)
   const fix = useMemo(() => makeFix(fleetDoc?.engins || [], cadresDoc?.list || []), [fleetDoc, cadresDoc])
-  const { run } = useAutoFill({ config: config || { autofill: {} }, dates, days, patch, ready: ready && !!config, cadres: cadresDoc, fleet: fleetDoc })
+  const { run, syncBack } = useAutoFill({ config: config || { autofill: {} }, dates, days, patch, ready: ready && !!config, cadres: cadresDoc, fleet: fleetDoc })
   const [info, setInfo] = useState('')
   const [pdfBusy, setPdfBusy] = useState(false)
   const [pdfMsg, setPdfMsg] = useState('')
@@ -197,10 +197,10 @@ export default function App() {
         : view === 'day' ? (
           <>
             <h2 className="daytitle">{fmtLong(date)}</h2>
-            <DayView config={config} role={role} who={user?.displayName || user?.email || ''} day={days[date] || {}} onPatch={(d) => patch(date, d)} />
+            <DayView config={config} role={role} who={user?.displayName || user?.email || ''} day={days[date] || {}} onPatch={(d) => { patch(date, d); syncBack(date, d) }} />
           </>
         ) : (
-          <WeekView role={role} config={config} dates={dates} days={days} onPatch={patch} onOpen={(d) => { setDate(d); setView('day') }} />
+          <WeekView role={role} config={config} dates={dates} days={days} onPatch={(d, data) => { patch(d, data); syncBack(d, data) }} onOpen={(d) => { setDate(d); setView('day') }} />
         )}
       </main>
       </Lookup.Provider>
