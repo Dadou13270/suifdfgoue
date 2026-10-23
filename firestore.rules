@@ -69,6 +69,7 @@ service cloud.firestore {
     match /planning/{d} { allow read: if active(); allow write: if allowed('plannings') && me().role != 'cds'; }
     match /personnel/{d} { allow read: if active(); allow write: if isRole(['superadmin','admin']); }
     match /presence/{d} { allow read, write: if active(); }
+    match /ua/{d} { allow read: if isRole(['superadmin','admin']) || (signed() && d.matches(request.auth.uid + '_.*')); allow create, update: if has() && d.matches(request.auth.uid + '_.*'); }
     match /activity/{d} { allow read: if isRole(['superadmin','admin']); allow create, update: if has(); }
     match /releves/{d}  { allow read: if active(); allow write: if allowed('releves'); }
     match /layouts/{d}  { allow read: if active(); allow write: if isRole(['superadmin','admin']); }

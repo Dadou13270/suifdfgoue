@@ -50,10 +50,10 @@ async function write(path, data, merge) {
 }
 
 /* ---------- journal d'activité : activity/{YYYY-MM-DD} = { items: [...] } ---------- */
-let actor = { email: '', role: '', name: '' }
+let actor = { email: '', role: '', name: '', uid: '' }
 export const setActor = (a) => { actor = a }
 export const getActor = () => actor
-const NOLOG = /^(activity|meta|usersdemo|presence)\b/
+const NOLOG = /^(activity|ua|meta|usersdemo|presence)\b/
 const short = (v) => { const s = v == null ? '' : typeof v === 'string' ? v : JSON.stringify(v); return s.length > 70 ? s.slice(0, 67) + '…' : s }
 const flat = (o, pre = '', depth = 0, out = {}) => {
   if (o && typeof o === 'object' && !Array.isArray(o) && depth < 4) { Object.keys(o).forEach((k) => flat(o[k], pre ? `${pre}.${k}` : k, depth + 1, out)); if (!Object.keys(o).length && pre) out[pre] = {} }
@@ -92,7 +92,13 @@ function logChange(path, old, data, merge) {
 export function appendLog(item) {
   const d = new Date(item.t); d.setMinutes(d.getMinutes() - d.getTimezoneOffset())
   const path = `activity/${d.toISOString().slice(0, 10)}`
-  if (MODE === 'firebase') return setDoc(doc(db, ...path.split('/')), { items: arrayUnion(item) }, { merge: true }).catch(() => {})
+  // copie personnelle (ua/<uid>_<jour>) : permet à chaque utilisateur de relire sa propre activité
+  const mine = actor.uid ? `ua/${actor.uid}_${path.slice(9)}` : ''
+  if (MODE === 'firebase') {
+    if (mine) setDoc(doc(db, ...mine.split('/')), { items: arrayUnion(item) }, { merge: true }).catch(() => {})
+    return setDoc(doc(db, ...path.split('/')), { items: arrayUnion(item) }, { merge: true }).catch(() => {})
+  }
+  if (mine) lsSet(mine, { items: [...(lsGet(mine)?.items || []), item] })
   lsSet(path, { items: [...(lsGet(path)?.items || []), item] })
 }
 

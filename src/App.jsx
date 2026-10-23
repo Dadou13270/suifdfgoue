@@ -14,6 +14,7 @@ import { usePersonnel } from './Personnel.jsx'
 import { ROLES, allowedTabs, canTab, setRights, isReadOnly, canValidate } from './roles.js'
 import ReadOnly from './ReadOnly.jsx'
 import Journal from './Journal.jsx'
+import MyActivity from './MyActivity.jsx'
 import Nav from './Nav.jsx'
 import Plannings from './Plannings.jsx'
 import Engins from './Engins.jsx'
@@ -54,7 +55,7 @@ export default function App() {
   const [viewAs, setViewAs] = useState('')
   const role = realRole === 'superadmin' && viewAs ? viewAs : realRole
   const ready = !!user && role !== undefined && role !== 'pending' && role !== 'refused'
-  setActor({ email: user?.email || '', role: realRole || '', name: user?.displayName || '' })
+  setActor({ email: user?.email || '', role: realRole || '', name: user?.displayName || '', uid: user?.uid || '' })
   const [rightsDoc] = useDoc('config/rights', !!user && role !== undefined)
   setRights(rightsDoc?.roles, rightsDoc?.tabsV)
   const [config, saveConfig] = useConfig(ready)
@@ -108,6 +109,7 @@ export default function App() {
   const waitingCount = ['superadmin', 'admin'].includes(role) ? P.users.filter((u) => (u.role || 'pending') === 'pending' && u.id !== user?.uid).length : 0
   const allowed = allowedTabs(role)
   const [jr, setJr] = useState(false)
+  const [ma, setMa] = useState(false)
   const W = (el) => (isReadOnly(role, tab) ? <ReadOnly key={tab}>{el}</ReadOnly> : el)
   useEffect(() => { if (role && allowed.length && !allowed.includes(tab)) setTab(allowed[0]) }, [role, tab, rightsDoc]) // eslint-disable-line
   if (user === undefined || (user && role === undefined)) return <div className="boot">Chargement…</div>
@@ -175,12 +177,14 @@ export default function App() {
           <span className="muted small">Remplissage automatique à l'ouverture. Si le planning change, cliquez sur Importer le planning.</span>
           <div className="actions">
             <button onClick={() => doFill(true)} title="Importe dans la journée les chefs de GIFF, groupes de commandement et engins du calendrier">Importer le planning</button>
+            <button onClick={() => setMa(true)}>🕘 Activités</button>
             {view !== 'week' && <button onClick={() => setJr(true)}>📒 Main courante{Object.values(days[date]?.journal || {}).filter(Boolean).length ? ` (${Object.values(days[date].journal).filter(Boolean).length})` : ''}</button>}
             {view !== 'week' && canValidate(role) && !days[date]?.validated?.at && <button className="primary" onClick={() => patch(date, { validated: { at: new Date().toISOString(), by: user?.displayName || user?.email || '' } })}>✔ Valider le dispositif</button>}
           </div>
           {info && <span className="small">{info}</span>}
         </div>
       )}
+      {ma && tab === 'dispositif' && <MyActivity config={config} role={role} onClose={() => setMa(false)} />}
       {jr && tab === 'dispositif' && view !== 'week' && <Journal journal={days[date]?.journal} who={user?.displayName || user?.email || ''} onPatch={(d) => patch(date, d)} onClose={() => setJr(false)} />}
       <Lookup.Provider value={{ fix, fleet: fleetDoc?.engins || [], statuses: config.statuses, date }}>
       <main ref={mainRef}>

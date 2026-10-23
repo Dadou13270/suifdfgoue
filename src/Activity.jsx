@@ -6,7 +6,7 @@ const AREAS = { 'config/main': 'Paramètres', 'config/rights': 'Droits des rôle
 const PLAN = { chefsgiff: 'Planning chefs de GIFF', gcdt: 'Planning GCDT', vpc: 'Planning garde VPC' }
 const KEYS = { header: 'En-tête', heads: 'Chef', headCis: 'CIS', headsAuto: '', locs: 'Emplacement', duty: 'Astreinte/Caserné', names: 'Nom', comment: 'Commentaire', customBlocks: 'Bloc ajouté', overrides: 'Bloc personnalisé', cells: '', extra: 'Ligne ajoutée', autoDone: '' }
 
-function area(path, config) {
+export function area(path, config) {
   if (AREAS[path]) return AREAS[path]
   const [a, b] = path.split('/')
   if (a === 'days') return 'Jour ' + fmtDMY(b)
@@ -14,7 +14,7 @@ function area(path, config) {
   if (a === 'users') return 'Rôle utilisateur'
   return path
 }
-function what(path, p, config) {
+export function what(path, p, config) {
   if (p === 'auto') return 'Remplissage automatique'
   if (!path.startsWith('days/')) return p
   const [k, ...r] = p.split('.')
@@ -26,6 +26,20 @@ function what(path, p, config) {
   if (['heads', 'headCis', 'locs', 'names', 'duty'].includes(k)) { const b = config.blocks.find((x) => x.id === r[0]); return `${b?.title || r[0]} · ${KEYS[k]}${r[1] ? ' ' + r.slice(1).join('.') : ''}` }
   if (k === 'header') return config.header.find((h) => h.id === r[0])?.label || r[0]
   return KEYS[k] || p
+}
+
+export function ActItem({ x, config }) {
+  return (
+    <div className={`act ${x.auto ? 'auto' : ''}`}>
+      <div className="acthead"><b>{new Date(x.t).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}</b> <span>{x.who}</span>{x.role && <span className="muted"> ({x.role})</span>} <span className="chip">{area(x.path, config)}</span></div>
+      <ul>
+        {x.ch.map((c, j) => (
+          <li key={j}><span>{what(x.path, c.p, config)}</span> : {c.o ? <s className="muted">{c.o}</s> : null}{c.o && c.n ? ' → ' : ''}{c.n ? <b>{c.n}</b> : (!c.o ? <i className="muted">vide</i> : <i className="muted"> supprimé</i>)}</li>
+        ))}
+        {x.more > 0 && <li className="muted">… et {x.more} autre(s)</li>}
+      </ul>
+    </div>
+  )
 }
 
 export default function Activity({ config }) {
@@ -51,17 +65,7 @@ export default function Activity({ config }) {
       </div>
       <p className="muted small">{doc === undefined ? 'Chargement…' : `${items.length} modification(s) le ${fmtDMY(date)}`}</p>
       <div className="actlist">
-        {items.map((x, i) => (
-          <div className={`act ${x.auto ? 'auto' : ''}`} key={x.t + '-' + i}>
-            <div className="acthead"><b>{new Date(x.t).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}</b> <span>{x.who}</span>{x.role && <span className="muted"> ({x.role})</span>} <span className="chip">{area(x.path, config)}</span></div>
-            <ul>
-              {x.ch.map((c, j) => (
-                <li key={j}><span>{what(x.path, c.p, config)}</span> : {c.o ? <s className="muted">{c.o}</s> : null}{c.o && c.n ? ' → ' : ''}{c.n ? <b>{c.n}</b> : (!c.o ? <i className="muted">vide</i> : <i className="muted"> supprimé</i>)}</li>
-              ))}
-              {x.more > 0 && <li className="muted">… et {x.more} autre(s)</li>}
-            </ul>
-          </div>
-        ))}
+        {items.map((x, i) => <ActItem key={x.t + '-' + i} x={x} config={config} />)}
         {doc !== undefined && !items.length && <p className="muted">Aucune modification enregistrée ce jour-là.</p>}
       </div>
     </div>
