@@ -81,7 +81,13 @@ function logChange(path, old, data, merge) {
     const out = []
     const fo = flat(old || {}), fn = flat(data || {})
     const keys = merge ? Object.keys(fn) : [...new Set([...Object.keys(fo), ...Object.keys(fn)])]
-    keys.filter((k) => !/(^|\.)(headsAuto|autoDone|auto)(\.|$)/.test(k)).forEach((k) => diffVals(k, fo[k] ?? (k in fo ? fo[k] : undefined), fn[k], out))
+    keys.filter((k) => !/(^|\.)(headsAuto|autoDone|auto)(\.|$)/.test(k)).forEach((k) => {
+      if (merge && fn[k] == null) {   // suppression (null) : détailler ce qui disparaît
+        const sub = Object.keys(fo).filter((x) => x === k || x.startsWith(k + '.'))
+        if (sub.length) { sub.forEach((x) => diffVals(x, fo[x], undefined, out)); return }
+      }
+      diffVals(k, fo[k] ?? (k in fo ? fo[k] : undefined), fn[k], out)
+    })
     const auto0 = merge && data && data.autoDone !== undefined
     if (!out.length && !auto0) return
     const auto = merge && data && data.autoDone !== undefined
