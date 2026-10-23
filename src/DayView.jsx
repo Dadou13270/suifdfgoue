@@ -65,7 +65,7 @@ function Block({ b, config, day, onPatch }) {
   )
 }
 
-function ValidBar({ v, can, onValidate, onCancel }) {
+function ValidBar({ v, can, onCancel }) {
   if (v?.at) {
     const t = new Date(v.at)
     const h = t.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }).replace(':', 'h')
@@ -77,7 +77,7 @@ function ValidBar({ v, can, onValidate, onCancel }) {
       </div>
     )
   }
-  return can ? <div className="validbar"><button className="primary" onClick={onValidate}>✔ Valider le dispositif</button></div> : null
+  return null
 }
 
 export default function DayView({ config, day, onPatch, role, who, date }) {
@@ -137,7 +137,7 @@ export default function DayView({ config, day, onPatch, role, who, date }) {
         ))}
       </section>
       {canLayout(role) && <LayoutBar lay={lay} editable edit={edit} onEdit={startEdit} onCancel={() => setEdit(false)} onSave={(l, cb) => cb(reconcile(draft, allIds))} />}
-      <ValidBar v={day.validated} can={canValidate(role)} onValidate={() => onPatch({ validated: { at: new Date().toISOString(), by: who || '' } })} onCancel={() => onPatch({ validated: null })} />
+      <ValidBar v={day.validated} can={canValidate(role)} onCancel={() => onPatch({ validated: null })} />
       <Legend legend={config.legend} />
       {rows.map((r, i) => (
         <React.Fragment key={i}>

@@ -3,12 +3,13 @@ export const ROLES = {
   superadmin: { label: 'Super administrateur', rank: 4 },
   admin: { label: 'Administrateur', rank: 3 },
   chefcolonne: { label: 'Chef de colonne', rank: 2 },
+  chefsite: { label: 'Chef de site', rank: 2 },
   ogg: { label: 'OGG', rank: 1 },
   cds: { label: 'Centre de secours', rank: 1 },
   pending: { label: 'En attente de rôle', rank: 0 },
   refused: { label: 'Demande refusée', rank: 0 },
 }
-export const ASSIGNABLE = ['superadmin', 'admin', 'chefcolonne', 'ogg', 'cds', 'pending', 'refused']
+export const ASSIGNABLE = ['superadmin', 'admin', 'chefcolonne', 'chefsite', 'ogg', 'cds', 'pending', 'refused']
 
 export const TAB_LABELS = {
   dispositif: 'Dispositif (jour, semaine)', plannings: 'Plannings', engins: 'Engins', calendrier: 'Calendrier',
@@ -20,17 +21,18 @@ export const DEFAULT_ACCESS = {
   superadmin: [...ALL, 'settings', 'users'],
   admin: [...ALL, 'settings', 'users'],
   chefcolonne: ['dispositif', 'plannings', 'engins', 'carto', 'cadres', 'releves'],
+  chefsite: ['dispositif', 'plannings', 'engins', 'carto', 'cadres', 'releves'],   // mêmes droits que le chef de colonne
   ogg: ['dispositif', 'engins', 'carto'],
   cds: ['dispositif', 'plannings', 'engins', 'calendrier', 'carto'],   // droits fixes : pas de Paramètres, Cadres, Relèves
   pending: [],
   refused: [],
 }
-export const EDITABLE_ROLES = ['admin', 'chefcolonne', 'ogg']
+export const EDITABLE_ROLES = ['admin', 'chefcolonne', 'chefsite', 'ogg']
 // Centre de secours : modifie la vue jour et semaine, lecture seule sur ces onglets
 export const READONLY_TABS = { cds: ['plannings', 'engins', 'calendrier', 'carto'] }
 export const isReadOnly = (role, tab) => !!READONLY_TABS[role]?.includes(tab)
 // Choix / modification de la disposition : super administrateur et administrateur
-export const canValidate = (role) => ['superadmin', 'admin', 'chefcolonne', 'ogg'].includes(role)
+export const canValidate = (role) => ['superadmin', 'admin', 'chefcolonne', 'chefsite', 'ogg'].includes(role)
 export const canLayout = (role) => role === 'superadmin' || role === 'admin'
 
 // Droits en vigueur (config/rights, modifiable par le super administrateur et l'administrateur)
@@ -58,5 +60,5 @@ export const canEditRight = (actor, role, tab) => {
 // Réservé au super administrateur : import des données du classeur, réinitialisation
 export const isSuper = (role) => role === 'superadmin'
 // Rôles qu'un acteur peut attribuer ; un administrateur ne touche ni aux super administrateurs ni ne peut en créer
-export const assignableBy = (actor) => (actor === 'superadmin' ? ASSIGNABLE : actor === 'admin' ? ['admin', 'chefcolonne', 'ogg', 'cds', 'pending', 'refused'] : [])
+export const assignableBy = (actor) => (actor === 'superadmin' ? ASSIGNABLE : actor === 'admin' ? ['admin', 'chefcolonne', 'chefsite', 'ogg', 'cds', 'pending', 'refused'] : [])
 export const canEditUser = (actor, target) => actor === 'superadmin' || (actor === 'admin' && target.role !== 'superadmin')

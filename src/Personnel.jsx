@@ -34,7 +34,7 @@ export function usePersonnel(config, role, selfId, enabled) {
   return { loaded: !!doc, list, save, users, linkOf, mapped, needsSync, sync, syncAll: () => Promise.all(list.map(sync)) }
 }
 
-const ROLE_OPTS = ['', 'ogg', 'cds', 'chefcolonne', 'admin', 'superadmin']
+const ROLE_OPTS = ['', 'ogg', 'cds', 'chefcolonne', 'chefsite', 'admin', 'superadmin']
 
 export default function Personnel({ c, set, config, role, selfId, dirty }) {
   const P = usePersonnel(config, role, selfId, true)

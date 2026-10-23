@@ -67,7 +67,7 @@ export default function Users({ role, selfId, config }) {
       <h3>Droits par rôle</h3>
       <p className="muted small">Cochez les onglets accessibles à chaque rôle. Le super administrateur a toujours tous les droits ; l'administrateur garde Paramètres et Rôles ; seul le super administrateur modifie les droits de l'administrateur. La colonne « Rôles » est fixe.</p>
       <div className="perm-grid">
-        {['superadmin', 'admin', 'chefcolonne', 'ogg', 'cds'].map((r) => {
+        {['superadmin', 'admin', 'chefcolonne', 'chefsite', 'ogg', 'cds'].map((r) => {
           const n = Object.keys(TAB_LABELS).filter((t) => access[r].includes(t)).length
           return (
             <section className="card perm-card" key={r}>

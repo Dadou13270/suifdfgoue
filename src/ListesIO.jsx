@@ -109,7 +109,7 @@ export default function ListesIO({ config, role, selfId }) {
       <h3>Listes : export / import</h3>
       <label className="chk"><input type="checkbox" checked={replace} onChange={(e) => setReplace(e.target.checked)} /> Remplacer toute la liste à l'import (sinon : fusion, sans rien supprimer)</label>
       <Card title="Gestion du personnel" count={P.list.length} onExport={expP} onImport={impP}
-        hint="Colonnes : nom ; prenom ; grade ; fdf ; cadre_emploi ; role (ogg, chefcolonne, admin ou vide) ; email. Fusion sur nom + prénom." />
+        hint="Colonnes : nom ; prenom ; grade ; fdf ; cadre_emploi ; role (ogg, chefcolonne, chefsite, admin ou vide) ; email. Fusion sur nom + prénom." />
       <Card title="Engins" count={engins.length} onExport={expE} onImport={impE}
         hint="Colonnes : code ; cis ; categorie ; statut. Fusion sur code + CIS." />
       <Card title="Calendrier perpétuel" count={lines.length} onExport={expC} onImport={impC}

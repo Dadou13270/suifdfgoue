@@ -6,7 +6,7 @@ service cloud.firestore {
     function has() { return signed() && exists(/databases/$(database)/documents/users/$(request.auth.uid)); }
     function isRole(r) { return has() && me().role in r; }
     // Comptes validés uniquement : « pending » (en attente) et « refused » ne lisent rien
-    function active() { return isRole(['superadmin','admin','chefcolonne','ogg','cds']); }
+    function active() { return isRole(['superadmin','admin','chefcolonne','chefsite','ogg','cds']); }
 
     // Annuaire des rôles par e-mail (écrit par superadmin/admin depuis « Gestion du personnel »)
     function emailKey() { return request.auth.token.email.lower(); }
@@ -14,14 +14,14 @@ service cloud.firestore {
     function rosterPath() { return /databases/$(database)/documents/roster/$(emailKey()); }
     // Auto-attribution : e-mail vérifié + fiche dans l'annuaire + rôle identique à celui de l'annuaire (jamais superadmin)
     function selfRole(newRole) {
-      return verified() && exists(rosterPath()) && get(rosterPath()).data.role == newRole && newRole in ['admin','chefcolonne','ogg','cds'];
+      return verified() && exists(rosterPath()) && get(rosterPath()).data.role == newRole && newRole in ['admin','chefcolonne','chefsite','ogg','cds'];
     }
     match /roster/{d} {
       allow read: if signed() && (isRole(['superadmin','admin']) || (request.auth.token.email != null && request.auth.token.email.lower() == d));
       allow write: if isRole(['superadmin','admin']);
     }
 
-    // Rôles : superadmin | admin | chefcolonne | ogg | cds | pending
+    // Rôles : superadmin | admin | chefcolonne | chefsite | ogg | cds | pending
     match /users/{uid} {
       allow read: if signed();
       // 1er compte (avant meta/init) = superadmin ; ensuite uniquement « pending »
@@ -42,6 +42,7 @@ service cloud.firestore {
       return {
         'admin': ['dispositif','plannings','engins','calendrier','carto','cadres','releves','settings','users'],
         'chefcolonne': ['dispositif','plannings','engins','carto','cadres','releves'],
+        'chefsite': ['dispositif','plannings','engins','carto','cadres','releves'],
         'ogg': ['dispositif','engins','carto'],
         'cds': ['dispositif','plannings','engins','calendrier','carto']
       }.get(r, []);
