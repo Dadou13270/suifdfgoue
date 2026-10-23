@@ -93,11 +93,12 @@ export default function DayView({ config, day, onPatch, role, who, date }) {
     : isAddable(b) ? <ConfigBlock key={b.id} off={isOff(config, day.header?.niveau, b.id)} b={b} config={config} day={day} onPatch={onPatch} />
     : <Block key={b.id} b={b} config={config} day={day} onPatch={onPatch} />)
   const byId = Object.fromEntries([...vis, ...customs].map((b) => [b.id, b]))
-  const grp = (b) => (/^giff/.test(b.id) ? 0 : /^(mil|sigar)/.test(b.id) ? 1 : ['mip', 'dih', 'spec'].includes(b.id) ? 2 : 3)
+  const grp = (b) => (/^giff/.test(b.id) ? 0 : /^(mil|sigar)/.test(b.id) ? 1 : b.id === 'spec' ? 2 : 3)
   const defRows = (() => {
-    const rows = [vis.filter((b) => b.section === 'cdt').map((b) => b.id), [], [], [], []]
-    vis.filter((b) => b.section !== 'cdt').forEach((b) => rows[1 + grp(b)].push(b.id))
-    customs.forEach((b) => rows[4].push(b.id))
+    const rows = [vis.filter((b) => b.section === 'cdt').map((b) => b.id), [], [], [], [], []]
+    vis.filter((b) => b.section === 'gs').forEach((b) => rows[5].push(b.id))
+    vis.filter((b) => b.section !== 'cdt' && b.section !== 'gs').forEach((b) => rows[1 + grp(b)].push(b.id))
+    customs.forEach((b) => rows[b.section === 'gs' ? 5 : 4].push(b.id))
     return rows.filter((r) => r.length)
   })()
   const allIds = defRows.flat()
@@ -107,7 +108,7 @@ export default function DayView({ config, day, onPatch, role, who, date }) {
   const mv = (fn) => setDraft((r) => fn(reconcile(r, allIds)))
   const addLine = (
     <div className="line addline" key="__add">
-      <AddBlockButton day={day} onPatch={onPatch} />
+      <AddBlockButton day={day} onPatch={onPatch} gsTitle={config.gsTitle || 'Groupes spécialisés'} />
       {hiddenOpt.map((b) => <button key={b.id} className="addbtn" onClick={() => onPatch({ shown: { [b.id]: true } })}>+ {b.title}{b.tag ? ` ${b.tag}` : ''}</button>)}
       <span className="muted small">Bloc propre à ce jour. Pour un bloc permanent : Paramètres › Blocs.</span>
     </div>
@@ -143,13 +144,14 @@ export default function DayView({ config, day, onPatch, role, who, date }) {
       {rows.map((r, i) => (
         <React.Fragment key={i}>
           {(() => {
-            const isC = (id) => byId[id]?.section === 'cdt'
-            const hasC = (x) => x.some(isC); const hasM = (x) => x.some((id) => !isC(id))
-            const prev = rows[i - 1]
-            const anyC = rows.some(hasC)
+            const sec = (id) => (byId[id]?.section === 'cdt' ? 'cdt' : byId[id]?.section === 'gs' ? 'gs' : 'main')
+            const has = (x, s) => x.some((id) => sec(id) === s)
+            const first = (s) => has(r, s) && !rows.slice(0, i).some((x) => has(x, s))
+            const multi = ['cdt', 'gs'].some((s) => rows.some((x) => has(x, s)))
             return <>
-              {hasC(r) && !(prev && hasC(prev)) && <h3 className="sectitle">{config.cdtTitle || 'Chaîne de commandement'}</h3>}
-              {anyC && hasM(r) && !rows.slice(0, i).some(hasM) && <h3 className="sectitle">Dispositif</h3>}
+              {first('cdt') && <h3 className="sectitle">{config.cdtTitle || 'Chaîne de commandement'}</h3>}
+              {multi && first('main') && <h3 className="sectitle">Dispositif</h3>}
+              {first('gs') && <h3 className="sectitle">{config.gsTitle || 'Groupes spécialisés'}</h3>}
             </>
           })()}
           <div className="grid rowgrid" style={{ '--n': 4 }} onDragOver={edit ? (e) => e.preventDefault() : undefined}>

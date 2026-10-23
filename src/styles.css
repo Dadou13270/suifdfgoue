@@ -414,3 +414,5 @@ input.crew-code:focus{background:color-mix(in srgb,var(--accent) 6%,var(--card))
 .chk input[type=checkbox],.bedit-inline input[type=checkbox]{flex:none;width:16px;height:16px;min-height:0;margin:0;accent-color:var(--accent)}
 .bedit-inline .chk{align-items:flex-start;line-height:1.25}
 .bedit-inline .chk input[type=checkbox]{margin-top:2px}
+
+.addblk{display:inline-flex;gap:8px;align-items:center;flex-wrap:wrap;padding:4px 8px;border:1px dashed var(--line);border-radius:10px}

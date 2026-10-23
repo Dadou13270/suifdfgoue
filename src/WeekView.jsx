@@ -18,7 +18,7 @@ export default function WeekView({ config, dates, days, onPatch, onOpen, role })
   const sorted = seq.map((id) => config.blocks.find((b) => b.id === id)).filter(Boolean)
   const shownWeek = (b) => dates.some((d) => isShown(b, days[d]))
   const hiddenWeek = sorted.filter((b) => !shownWeek(b))
-  const ordered = [...sorted.filter((b) => b.section === 'cdt' && shownWeek(b)), ...sorted.filter((b) => b.section !== 'cdt' && shownWeek(b))]
+  const ordered = [...sorted.filter((b) => b.section === 'cdt' && shownWeek(b)), ...sorted.filter((b) => b.section !== 'cdt' && b.section !== 'gs' && shownWeek(b)), ...sorted.filter((b) => b.section === 'gs' && shownWeek(b))]
   const exportCsv = () => {
     const q = (s) => `"${String(s ?? '').replace(/"/g, '""')}"`
     const rows = [['Ligne', ...dates]]
@@ -43,7 +43,7 @@ export default function WeekView({ config, dates, days, onPatch, onOpen, role })
   const blockRows = (list) => list.map((b, bi) => (
               <React.Fragment key={b.id}>
                 {bi === 0 && (
-                  <tr className="secrow"><th colSpan={dates.length + 1}>{b.section === 'cdt' ? (config.cdtTitle || 'Chaîne de commandement') : 'Dispositif'}</th></tr>
+                  <tr className="secrow"><th colSpan={dates.length + 1}>{b.section === 'cdt' ? (config.cdtTitle || 'Chaîne de commandement') : b.section === 'gs' ? (config.gsTitle || 'Groupes spécialisés') : 'Dispositif'}</th></tr>
                 )}
                 <tr className="brow"><th className="sticky" colSpan={1}>{baseTitle(b)}</th>
                   {dates.map((d) => { const e = eb(b, d); return (
@@ -75,7 +75,8 @@ export default function WeekView({ config, dates, days, onPatch, onOpen, role })
   const off = (d, b) => (isOff(config, days[d]?.header?.niveau, b.id) || !isShown(b, days[d]) ? 'off' : '')
   const dateRow = (top) => <tr><th className="sticky" style={{ top }}>Semaine {weekNum(dates[0])}</th>{dates.map((d) => <th key={d} className={d === today ? 'todaycol' : ''} style={{ top }}><button className="link" onClick={() => onOpen(d)}>{fmtShort(d)}</button></th>)}</tr>
   const cdtList = ordered.filter((b) => b.section === 'cdt')
-  const mainList = ordered.filter((b) => b.section !== 'cdt')
+  const mainList = ordered.filter((b) => b.section !== 'cdt' && b.section !== 'gs')
+  const gsList = ordered.filter((b) => b.section === 'gs')
   return (
     <>
       <div className="weekstrip">
@@ -130,14 +131,31 @@ export default function WeekView({ config, dates, days, onPatch, onOpen, role })
               <th className="sticky sub">Autres blocs du jour</th>
               {dates.map((d) => (
                 <td key={d} className="customcell"><DayIndexProvider cells={days[d]?.cells}>
-                  {(days[d]?.customBlocks || []).map((b) => <CustomBlock key={b.id} compact b={b} day={days[d] || {}} config={config} onPatch={(p) => onPatch(d, p)} />)}
-                  <AddBlockButton compact day={days[d] || {}} onPatch={(p) => onPatch(d, p)} />
+                  {(days[d]?.customBlocks || []).filter((b) => b.section !== 'gs').map((b) => <CustomBlock key={b.id} compact b={b} day={days[d] || {}} config={config} onPatch={(p) => onPatch(d, p)} />)}
+                  <AddBlockButton compact day={days[d] || {}} onPatch={(p) => onPatch(d, p)} gsTitle={config.gsTitle || 'Groupes spécialisés'} />
                 </DayIndexProvider></td>
               ))}
             </tr>
           </tbody>
         </table>
       </div>
+      {(gsList.length > 0 || dates.some((d) => (days[d]?.customBlocks || []).some((b) => b.section === 'gs'))) && <div className="tablewrap blocksep">
+        <table className="week wv">
+          <colgroup><col style={{ width: 'clamp(90px, 9vw, 150px)' }} />{dates.map((d) => <col key={d} />)}</colgroup>
+          <thead>{dateRow(0)}</thead>
+          <tbody>
+            {blockRows(gsList)}
+            {dates.some((d) => (days[d]?.customBlocks || []).some((b) => b.section === 'gs')) && <tr>
+              <th className="sticky sub">Blocs ajoutés</th>
+              {dates.map((d) => (
+                <td key={d} className="customcell"><DayIndexProvider cells={days[d]?.cells}>
+                  {(days[d]?.customBlocks || []).filter((b) => b.section === 'gs').map((b) => <CustomBlock key={b.id} compact b={b} day={days[d] || {}} config={config} onPatch={(p) => onPatch(d, p)} />)}
+                </DayIndexProvider></td>
+              ))}
+            </tr>}
+          </tbody>
+        </table>
+      </div>}
     </>
   )
 }

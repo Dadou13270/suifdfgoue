@@ -22,6 +22,7 @@ function Affichage({ c, set }) {
       <label>Groupement<input value={c.groupement} onChange={(e) => set({ groupement: e.target.value })} /></label>
       <label>Échéance (compte à rebours)<input type="date" value={c.deadline || ''} onChange={(e) => set({ deadline: e.target.value })} /></label>
       <label>Titre de la section « chaîne de commandement »<input value={c.cdtTitle || ''} onChange={(e) => set({ cdtTitle: e.target.value })} /></label>
+      <label>Titre de la section « groupes spécialisés »<input value={c.gsTitle || ''} placeholder="Groupes spécialisés" onChange={(e) => set({ gsTitle: e.target.value })} /></label>
       <label>Libellé échéance<input value={c.deadlineLabel} onChange={(e) => set({ deadlineLabel: e.target.value })} /></label>
       <label>Thème
         <select value={c.theme} onChange={(e) => set({ theme: e.target.value })}>
@@ -142,6 +143,7 @@ function Blocs({ c, set }) {
             <label className="chk"><input type="checkbox" checked={b.location} onChange={(e) => setB(i, { location: e.target.checked })} /> Emplacement + horaires</label>
                         <label className="chk"><input type="checkbox" checked={b.addable ?? !!b.customName} onChange={(e) => setB(i, { addable: e.target.checked })} /> Configurable chaque jour (⚙ : nom, lignes, emplacement)</label>
             <label className="chk"><input type="checkbox" checked={b.section === 'cdt'} onChange={(e) => setB(i, { section: e.target.checked ? 'cdt' : '' })} /> Chaîne de commandement</label>
+            <label className="chk"><input type="checkbox" checked={b.section === 'gs'} onChange={(e) => setB(i, { section: e.target.checked ? 'gs' : '' })} /> Groupe spécialisé (rubrique « {c.gsTitle || 'Groupes spécialisés'} »)</label>
           </div>
           {b.head && <label className="chk"><input type="checkbox" checked={!!b.headCis} onChange={(e) => setB(i, { headCis: e.target.checked })} /> CIS sur la ligne d'intitulé (« GIFF1 MAT : chef de groupe »)</label>}
           {b.head && <input placeholder="Exemple d'intitulé (indice de saisie)" value={b.headHint || ''} onChange={(e) => setB(i, { headHint: e.target.value })} />}

@@ -4,7 +4,7 @@ import { cellKey, uid, listIdFor, guessFilter, effBlock, paxOf } from './util.js
 import { useEngage } from './engage.js'
 import { BlockTools } from './BlockTools.jsx'
 
-export const newBlock = () => ({ id: uid(), title: 'Autre bloc', head: false, location: false, rows: [{ id: uid(), label: 'Ligne 1' }] })
+export const newBlock = (gs) => ({ id: uid(), title: gs ? 'Groupe spécialisé' : 'Autre bloc', ...(gs ? { section: 'gs' } : {}), head: false, location: false, rows: [{ id: uid(), label: 'Ligne 1' }] })
 
 export function BlockEditor({ b, update, onDelete, onReset, showTitle }) {
   const clearRow = (r) => ({ [cellKey(b.id, r.id)]: { text: '', status: '', auto: false } })
@@ -93,8 +93,18 @@ export function ConfigBlock({ b, day, config, onPatch, compact, off, noConfig })
   return <BlockCard {...{ off, noConfig, b: eb, day, config, onPatch, compact, update, titleExtra: suffix, onReset: has ? () => onPatch({ overrides: { [b.id]: null } }) : null }} />
 }
 
-export function AddBlockButton({ day, onPatch, compact }) {
-  return <button className="addbtn" onClick={() => onPatch({ customBlocks: [...(day.customBlocks || []), newBlock()] })}>+ {compact ? 'Bloc' : 'Ajouter un bloc'}</button>
+export function AddBlockButton({ day, onPatch, compact, gsTitle }) {
+  const [open, setOpen] = useState(false)
+  const [gs, setGs] = useState(false)
+  if (!open) return <button className="addbtn" onClick={() => setOpen(true)}>+ {compact ? 'Bloc' : 'Ajouter un bloc'}</button>
+  const add = () => { onPatch({ customBlocks: [...(day.customBlocks || []), newBlock(gs)] }); setOpen(false); setGs(false) }
+  return (
+    <span className="addblk">
+      <label className="chk"><input type="checkbox" checked={gs} onChange={(e) => setGs(e.target.checked)} /> Groupe spécialisé{gsTitle ? ` (rubrique « ${gsTitle} »)` : ''}</label>
+      <button className="primary" onClick={add}>Ajouter</button>
+      <button onClick={() => { setOpen(false); setGs(false) }}>Annuler</button>
+    </span>
+  )
 }
 
 // Vue semaine : bouton ⚙ + éditeur du bloc pour un jour donné (même réglages que la carte)

@@ -235,7 +235,19 @@ function migrateSigarCcfs(d) {
   if (!d?.blocks) return d
   return { ...d, blocks: d.blocks.map((b) => (/^sigar/.test(b.id) ? { ...b, rows: b.rows.map((r) => (r.filter === undefined ? { ...r, filter: 'CCFS6' } : r)) } : b)) }
 }
+function migrateGs(d) {
+  if (!d?.blocks || d.gsFix) return d
+  const def = Object.fromEntries(DEFAULT_CONFIG.blocks.map((b) => [b.id, b]))
+  let blocks = d.blocks.map((b) => (['mip', 'dih'].includes(b.id) && !b.section ? { ...b, section: 'gs' } : b))
+  ;[['galff', 'mip'], ['gft', 'dih']].forEach(([id, after]) => {
+    if (blocks.some((b) => b.id === id) || !def[id]) return
+    const i = blocks.findIndex((b) => b.id === after)
+    blocks = i < 0 ? [...blocks, def[id]] : [...blocks.slice(0, i + 1), def[id], ...blocks.slice(i + 1)]
+  })
+  return { ...d, gsFix: true, gsTitle: d.gsTitle || DEFAULT_CONFIG.gsTitle, blocks }
+}
 function migrate(d) {
+  d = migrateGs(d)
   d = migrateSigarCcfs(d)
   d = migrateEngage(migrateAddable(d))
   d = migrateMil3(migrateMil2(migrateMil(d)))
